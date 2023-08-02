@@ -21,7 +21,7 @@ liver_dfclean <- liver_df[,c("Subject", "Gender", "Age", "BMI", "Time.from.trans
 #'missing values/zeros and to see what type each variable is coded as. Status()
 #'was used to check p_na values for each variable, values with p_na ,0.2 indicate
 #'data for variable has at least 80% non-NA values. Status() also tells us how
-#'man unique values are present per variable, this can help easily identify
+#'many unique values are present per variable, this can help easily identify
 #'which variables should be categorical.
 glimpse(liver_dfclean)
 status(liver_dfclean)
@@ -70,6 +70,75 @@ glimpse(liver_dfclean2)#variables successfully converted to factors
 #'The final set requires the removal of NA values from the dataset, this is done
 #'using the na.omit function
 liver_dfclean3 <- na.omit(liver_dfclean2)
+
+#---------------------------------------------------------------
+# Step 4. Identifying the relationship between sleep disturbance and quality of life (physical and mental).
+# We need to create linear regression models and conduct correlation tests for single predictors
+# to investigate whether there is a linear relationship between each measure and outcome (PCS and MCS)
+#First, we begin with the continuous measures
+#PCS ~ ESS
+#Linear Model
+model_pcs_ess <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale, data=liver_dfclean) #This function models SF36.PCS as a function of ESS
+summary(model_pcs_ess)
+plot(fitted(model_pcs_ess),resid(model_pcs_ess)) #Checking for homoscedasticity, looks ok
+#Correlation Work
+corr_pcs_ess <- cor.test(liver_dfclean$SF36.PCS, liver_dfclean$Epworth.Sleepiness.Scale)
+corr_pcs_ess
+#MCS ~ ESS
+#Linear Model
+model_mcs_ess <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale, data=liver_dfclean) #This function models SF36.MCS as a function of ESS
+summary(model_mcs_ess)
+plot(fitted(model_mcs_ess),resid(model_mcs_ess)) #Checking for homoscedasticity, looks ok
+#Correlation Work
+corr_mcs_ess <- cor.test(liver_dfclean$SF36.MCS, liver_dfclean$Epworth.Sleepiness.Scale)
+corr_mcs_ess
+#PCS ~ PSQI
+#Linear Model
+model_pcs_psqi <- lm(SF36.PCS ~ Pittsburgh.Sleep.Quality.Index.Score, data=liver_dfclean) #This function models SF36.PCS as a function of PSQI
+summary(model_pcs_psqi)
+plot(fitted(model_pcs_psqi),resid(model_pcs_psqi)) #Checking for homoscedasticity, looks ok
+#Correlation Work
+corr_pcs_psqi <- cor.test(liver_dfclean$SF36.PCS, liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)
+corr_pcs_psqi
+#MCS ~ PSQI
+#Linear Model
+model_mcs_psqi <- lm(SF36.MCS ~ Pittsburgh.Sleep.Quality.Index.Score, data=liver_dfclean) #This function models SF36.MCS as a function of PSQI
+summary(model_mcs_psqi)
+plot(fitted(model_mcs_psqi),resid(model_mcs_psqi)) #Checking for homoscedasticity, looks ok
+#Correlation Work
+corr_mcs_psqi <- cor.test(liver_dfclean$SF36.MCS, liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)
+corr_mcs_psqi
+#PCS ~ AIS
+#Linear Model
+model_pcs_ais <- lm(SF36.PCS ~ Athens.Insomnia.Scale, data=liver_dfclean) #This function models SF36.PCS as a function of AIS
+summary(model_pcs_ais)
+plot(fitted(model_pcs_ais), resid(model_pcs_ais)) 
+#Correlation Work
+corr_pcs_ais <- cor.test(liver_dfclean$SF36.PCS, liver_dfclean$Athens.Insomnia.Scale)
+corr_pcs_ais
+#MCS ~ AIS
+#Linear Model
+model_mcs_ais <- lm(SF36.MCS ~ Athens.Insomnia.Scale, data=liver_dfclean) #This function models SF36.PCS as a function of AIS
+summary(model_mcs_ais)
+plot(fitted(model_mcs_ais),resid(model_mcs_ais)) #Checking for homoscedasticity, looks ok
+#Correlation Work
+corr_pcs_ais <- cor.test(liver_dfclean$SF36.PCS, liver_dfclean$Athens.Insomnia.Scale)
+corr_pcs_ais
+# Now build up to multiple predictor models
+# A model predicting physical quality of life using the continuous sleep disturbance scores.
+# Fit the model
+PCS_model_continuous <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale, data=liver_dfclean3)
+# Print out the model summary
+summary(PCS_model_continuous)
+plot(fitted(PCS_model_continuous),resid(PCS_model_continuous)) #Checking for homoscedasticity, looks ok
+# A model predicting mental quality of life using the continuous sleep disturbance scores.
+MCS_model_continuous <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale, data=liver_dfclean3)
+# Print out the model summary
+summary(MCS_model_continuous)
+plot(fitted(MCS_model_continuous),resid(MCS_model_continuous)) #Checking for homoscedasticity, looks ok
+
+#2: A model predicting physical quality of life using the binary sleep disturbance scores.
+#4: A model predicting mental quality of life using the binary sleep disturbance scores.
 
 
 
