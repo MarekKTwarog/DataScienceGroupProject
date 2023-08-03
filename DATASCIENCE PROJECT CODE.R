@@ -11,7 +11,7 @@ liver_df <- read.csv("project_data.csv")
 
 #'Creating a new dataframe with only the variables that we need to conduct our
 #'analysis of the dataset
-liver_dfclean <- liver_df[,c("Subject", "Gender", "Age", "BMI", "Time.from.transplant",
+liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
 "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
 "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
 "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
