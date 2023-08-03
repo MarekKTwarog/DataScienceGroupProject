@@ -19,9 +19,9 @@ liver_dfclean <- liver_df[,c("Subject", "Gender", "Age", "BMI", "Time.from.trans
 
 #'Using glimpse() to display column names, analyze structure of data, identify
 #'missing values/zeros and to see what type each variable is coded as. Status()
-#'was used to check p_na values for each variable, values with p_na ,0.2 indicate
-#'data for variable has at least 80% non-NA values. Status() also tells us how
-#'man unique values are present per variable, this can help easily identify
+#'was used to check p_na values for each variable, values with p_na <0.2 indicate
+#'data for variable has less than 20% missing values. Status() also tells us how
+#'many unique values are present per variable, this can help easily identify
 #'which variables should be categorical.
 glimpse(liver_dfclean)
 status(liver_dfclean)
