@@ -11,7 +11,7 @@ liver_df <- read.csv("project_data.csv")
 
 #'Creating a new dataframe with only the variables that we need to conduct our
 #'analysis of the dataset
-liver_dfclean <- liver_df[,c("Subject", "Gender", "Age", "BMI", "Time.from.transplant",
+liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
 "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
 "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
 "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
@@ -46,7 +46,7 @@ glimpse(liver_dfclean)
 summary(liver_dfclean) #Looks good
 
 #'Here we convert PSQI, ESS and AIS, to binary variables like BSS based on the
-#'datasets description for values above a certain level. Epworth Sleepiness scale
+#'datasets description for values above a certain level. Epworth Sleepiness Scale
 #'total score greater than 10, indicating at least mild excessive daytime sleepiness
 #'(1 = yes, 0 = no), Pittsburgh Sleep Quality Index score greater than 4, indicating
 #'poor sleep quality (1 = yes, 0 = no),Athens Insomnia Scale total score greater than
