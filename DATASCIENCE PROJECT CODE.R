@@ -39,7 +39,7 @@ library(corrplot)
 #' wee find that the Athens.Insomnia.Scale has the strongest correlation with
 #' PSQ1 and thus we use the lm() function to build a linear regression model between
 #' the two variables so that it can then be used along with the predict() function
-#' to predict values for NA in the PSQ1 variable column. The values predictred are
+#' to predict values for NA in the PSQ1 variable column. The values predicted are
 #' then used to replace the NA values in the PSQ1 column,
 
 correlation <- cor(liver_dfclean, use = "pairwise")
@@ -96,3 +96,110 @@ glimpse(liver_dfclean2)#variables successfully converted to factors
 #'using the na.omit function
 
 liver_dfclean3 <- na.omit(liver_dfclean2)
+#--------------------------------------------------------------------------------------------------------------
+#--------------------------------------------
+# Step 4. Identifying the relationship between sleep disturbance and quality of life (physical and mental).
+# We need to create linear regression models and conduct correlation tests for single predictors
+# to investigate whether there is a linear relationship between each measure and outcome (PCS and MCS)
+# We begin with the continuous measures
+# List of continuous predictors
+continuous_predictors <- c("Epworth.Sleepiness.Scale", "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")
+# List of binary predictors
+binary_predictors <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
+# List of response variables
+responses <- c("SF36.PCS", "SF36.MCS")
+
+# Loop through each combination of predictor (continuous and binary) and response variable, and fit a linear regression model
+for (predictor in c(continuous_predictors, binary_predictors)) {
+  for (response in responses) {
+    model_formula <- as.formula(paste(response, "~", predictor))
+    model <- lm(model_formula, data = liver_dfclean3)
+    print(paste("Model: ", response, " ~ ", predictor))
+    print(summary(model))
+    plot(fitted(model), resid(model))  # Checking for homoscedasticity
+    print(cor.test(liver_dfclean3[[response]], liver_dfclean3[[predictor]]))
+  }
+}
+#----------------------------------------------------------------------------------
+# Now build up to multiple predictor models
+# Load the MASS library for the stepAIC function
+library(MASS)
+# Continous variables only for PCS and MCS
+
+# Define the PCS null model
+PCS.cont.lm.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfclean3)
+
+# Define the full model
+PCS.cont.lm.mod.full <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale, data = liver_dfclean3)
+
+# Perform forward stepwise selection
+PCS.cont.lm.step.forw <- stepAIC(PCS.cont.lm.mod.null, direction = "forward", trace = F, scope = list(upper = cont.lm.mod.full, lower = cont.lm.mod.null))
+
+# View the final model
+summary(PCS.cont.lm.step.forw)
+
+# Define the MCS null model
+MCS.cont.lm.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfclean3)
+
+# Define the full model
+MCS.cont.lm.mod.full <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale, data = liver_dfclean3)
+
+# Perform forward stepwise selection
+MCS.cont.lm.step.forw <- stepAIC(MCS.cont.lm.mod.null, direction = "forward", trace = F, scope = list(upper = cont.lm.mod.full, lower = cont.lm.mod.null))
+
+# View the final model
+summary(MCS.cont.lm.step.forw)
+#---------------------------------------------------------------------------------
+# Binary variables only for PCS
+
+# Define the PCS null model
+PCS.binom.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfclean3)
+
+# Define the full model
+PCS.binom.mod.full <- lm(SF36.PCS ~ Epworth_binary + Pittsburgh_binary + Athens_binary + Berlin.Sleepiness.Scale, data = liver_dfclean3)
+
+# Perform forward stepwise selection
+PCS.binom.step.forw <- stepAIC(PCS.binom.mod.null, direction = "forward", trace = F, scope = list(upper = PCS.binom.mod.full, lower = PCS.binom.mod.null))
+
+# View the final model
+summary(PCS.binom.step.forw)
+
+# Binary variables only for MCS
+
+# Define the MCS null model
+MCS.binom.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfclean3)
+
+# Define the full model
+MCS.binom.mod.full <- lm(SF36.MCS ~ Epworth_binary + Pittsburgh_binary + Athens_binary + Berlin.Sleepiness.Scale, data = liver_dfclean3)
+
+# Perform forward stepwise selection
+MCS.binom.step.forw <- stepAIC(MCS.binom.mod.null, direction = "forward", trace = F, scope = list(upper = MCS.binom.mod.full, lower = MCS.binom.mod.null))
+
+# View the final model
+summary(MCS.binom.step.forw)
+# --------------------------------------------
+# Mixed model
+# Define the PCS null model
+PCS.mix.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfclean3)
+
+# Define the full model
+PCS.mix.mod.full <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_dfclean3)
+
+# Perform forward stepwise selection
+PCS.mix.step.forw <- stepAIC(PCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = PCS.mix.mod.full, lower = PCS.mix.mod.null))
+
+# View the final model
+summary(PCS.mix.step.forw)
+
+# Define the MCS null model
+MCS.mix.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfclean3)
+
+# Define the full model
+MCS.mix.mod.full <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_dfclean3)
+
+# Perform forward stepwise selection
+MCS.mix.step.forw <- stepAIC(MCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = MCS.mix.mod.full, lower = MCS.mix.mod.null))
+
+# View the final model
+summary(MCS.mix.step.forw)
+
