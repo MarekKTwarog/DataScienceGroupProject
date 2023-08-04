@@ -137,18 +137,33 @@ epworth_pop <- sum(!is.na(Epworth_binary))
 pittsburgh_pop <- sum(!is.na(Pittsburgh_binary))
 athens_pop <- sum(!is.na(Athens_binary))
 
+
 # Calculate the prevalence of sleep disturbance with confidence interval set at 0.95 for each scale using prop.test()
 prev_berlin <- prop.test(x = berlin_cases, n = berlin_pop, conf.level = 0.95)
 prev_epworth <- prop.test(x = epworth_cases,  n = epworth_pop, conf.level = 0.95)
 prev_pittsburgh <- prop.test(x = pittsburgh_cases, n = pittsburgh_pop, conf.level = 0.95)
 prev_athens <- prop.test(x = athens_cases, n = athens_pop, conf.level = 0.95)
 
-# Create a data frame with the prevalence values
-prevalence_df <- data.frame(
+
+# Create a data frame that ultimately show prevalence values as percent with the confidence intervals
+data_df <- data.frame(
   Scale = c("Berlin", "Epworth", "Pittsburgh", "Athens"),
-  Prevalence = c(prev_berlin$estimate, prev_epworth$estimate, prev_pittsburgh$estimate, prev_athens$estimate),
-  CI.Lower = c(prev_berlin$conf.int[1], prev_epworth$conf.int[1], prev_pittsburgh$conf.int[1], prev_athens$conf.int[1]),
-  CI.Upper = c(prev_berlin$conf.int[2], prev_epworth$conf.int[2], prev_pittsburgh$conf.int[2], prev_athens$conf.int[2])
+  Cases = c(berlin_cases, epworth_cases, pittsburgh_cases, athens_cases),
+  Population = c(berlin_pop, epworth_pop, pittsburgh_pop, athens_pop),
+  Missing.Values = c(missing_berlin, missing_epworth, missing_pittsburgh, missing_athens),
+  Prevalence.Percent = c(prev_berlin$estimate, prev_epworth$estimate, prev_pittsburgh$estimate, prev_athens$estimate) * 100,
+  CI.Lower = c(prev_berlin$conf.int[1], prev_epworth$conf.int[1], prev_pittsburgh$conf.int[1], prev_athens$conf.int[1]) * 100,
+  CI.Upper = c(prev_berlin$conf.int[2], prev_epworth$conf.int[2], prev_pittsburgh$conf.int[2], prev_athens$conf.int[2]) * 100
 )
 
+data_df <- data_df[sort.list(data_df$Prevalence.Percent),]
+data_df$rank <- 1:nrow(data_df)
 
+library(ggplot2)
+ggplot(data = data_df, aes(x = rank, y = Prevalence.Percent)) +
+  theme_bw() +
+  geom_errorbar(aes(ymin = CI.Lower , ymax = CI.Upper), width = 0.1) +
+  geom_point() +
+  scale_x_continuous(breaks = data_df$rank, labels = data_df$Scale, name = "Sleep Disturbance Scales") +
+  scale_y_continuous(limits = c(0,100), name = "Cases per 100 individuals at risk") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1))
