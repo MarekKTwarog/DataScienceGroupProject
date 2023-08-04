@@ -1,3 +1,10 @@
+### Team Project BTC 1859H: Data Science in Health I
+### Leen Madani, Maryaah Salyani, Owen Treleaven, Marek Twarog
+### August 15, 2023 at 5PM
+
+
+#### Goal 1: Description of relevant data
+
 #Loading packages for data cleaning / analysis
 install.packages("tidyverse")
 install.packages("funModeling")
@@ -70,18 +77,14 @@ glimpse(liver_dfclean)
 #'encoded as NA's but look to be out of place
 summary(liver_dfclean) #Looks good
 
-#'Here we convert PSQI, ESS and AIS, to binary variables like BSS based on the
-#'datasets description for values above a certain level. Epworth Sleepiness Scale
-#'total score greater than 10, indicating at least mild excessive daytime sleepiness
-#'(1 = yes, 0 = no), Pittsburgh Sleep Quality Index score greater than 4, indicating
-#'poor sleep quality (1 = yes, 0 = no),Athens Insomnia Scale total score greater than
-#'5, indicating the presence of insomnia, (1 = yes, 0 = no). The new variables are
-#'added to the dataframe as new columns using the mutate function from the tidyverse
-#'package.
+#'Here , we convert sleep disturbance measures (PSQI, ESS, and AIS) to binary variables
+#' using the given clinically accepted threshold for each measure
+#' Berlin.Sleepiness.Scale (BSS) is already a binary variable, so will not convert it
+#' The new variables are added to the dataframe as new columns using the mutate() function from the tidyverse package
 liver_dfclean2 <- liver_dfclean %>%
-  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
-         Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
-         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
+  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),                # for ESS, values above 10 indicate sleep disturbance and are changed to 1, else 0 (normal)
+         Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),  # for PSQI, values above 4 indicate disturbed sleep and are changed to 1, else 0 (normal)
+         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))                      # for AIS, values above 5 indicate sleep disturbance and are changed to 1, else 0 (normal)
 
 #Now we must convert the newly made binary variables to factors for further analysis
 categorical_var2 <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary")
@@ -96,3 +99,53 @@ glimpse(liver_dfclean2)#variables successfully converted to factors
 #'using the na.omit function
 
 liver_dfclean3 <- na.omit(liver_dfclean2)
+
+#### Goal 2: Estimation of the prevalence of sleep disturbance
+
+# Attach dataframe to avoid referencing it every time you use it
+attach(liver_dfclean3)
+
+# Calculate the prevalence of sleep disturbance using the 4 measures using prop.table() function and view results in a table
+prevalence <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Pittsburgh_binary, Athens_binary))
+
+# Extract the table
+write.csv(prevalence, "prevalence.csv")
+
+# Calculate the prevalence of sleep disturbance for each scale
+prev_berlin <- sum(Berlin.Sleepiness.Scale == 1) / nrow(liver_dfclean3)
+prev_epworth <- sum(Epworth_binary == 1) / nrow(liver_dfclean3)
+prev_pittsburgh <- sum(Pittsburgh_binary == 1) / nrow(liver_dfclean3)
+prev_athens <- sum(Athens_binary == 1) / nrow(liver_dfclean3)
+
+# Create a data frame with the prevalence values
+prevalence_df <- data.frame(
+  Scale = c("Berlin", "Epworth", "Pittsburgh", "Athens"),
+  Prevalence = c(prev_berlin, prev_epworth, prev_pittsburgh, prev_athens)
+)
+
+#' Trying to calculate the prevalence by taking into consideration the observations without missing values for each scale
+#' Each scale has different number of observations with missing values
+#' Detach liver_dfclean3 as we need to use the previous dataframe where NA's where not omitted yet.
+detach(liver_dfclean3)
+attach(liver_dfclean2)
+
+# Check the number of observations with missing values for each scale
+missing_berlin <- sum(is.na(Berlin.Sleepiness.Scale))
+missing_epworth <- sum(is.na(Epworth_binary))
+missing_pittsburgh <- sum(is.na(Pittsburgh_binary))
+missing_athens <- sum(is.na(Athens_binary))
+
+sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE)
+sum(Epworth_binary == 1, na.rm=TRUE)
+sum(Pittsburgh_binary == 1, na.rm = TRUE)
+# Calculate the prevalence of sleep disturbance for each scale
+prev_berlin <- sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE) / (nrow(liver_dfclean2) - missing_berlin)
+prev_epworth <- sum(Epworth_binary == 1, na.rm=TRUE) / (nrow(liver_dfclean2) - missing_epworth)
+prev_pittsburgh <- sum(Pittsburgh_binary == 1, na.rm = TRUE) / (nrow(liver_dfclean2) - missing_pittsburgh)
+prev_athens <- sum(Athens_binary == 1, na.rm = TRUE) / (nrow(liver_dfclean2) - missing_athens)
+
+# Create a data frame with the prevalence values
+prevalence_NAs <- data.frame(
+  Scale = c("Berlin", "Epworth", "Pittsburgh", "Athens"),
+  Prevalence = c(prev_berlin, prev_epworth, prev_pittsburgh, prev_athens)
+)
