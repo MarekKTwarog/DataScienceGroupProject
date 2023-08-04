@@ -135,9 +135,6 @@ missing_epworth <- sum(is.na(Epworth_binary))
 missing_pittsburgh <- sum(is.na(Pittsburgh_binary))
 missing_athens <- sum(is.na(Athens_binary))
 
-sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE)
-sum(Epworth_binary == 1, na.rm=TRUE)
-sum(Pittsburgh_binary == 1, na.rm = TRUE)
 # Calculate the prevalence of sleep disturbance for each scale
 prev_berlin <- sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE) / (nrow(liver_dfclean2) - missing_berlin)
 prev_epworth <- sum(Epworth_binary == 1, na.rm=TRUE) / (nrow(liver_dfclean2) - missing_epworth)
