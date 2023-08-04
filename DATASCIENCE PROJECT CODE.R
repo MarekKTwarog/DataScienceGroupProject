@@ -71,7 +71,7 @@ glimpse(liver_dfclean2)#variables successfully converted to factors
 #'using the na.omit function
 liver_dfclean3 <- na.omit(liver_dfclean2)
 
-#---------------------------------------------------------------
+#--------------------------------------------------------------------------------------------------------------
 # Step 4. Identifying the relationship between sleep disturbance and quality of life (physical and mental).
 # We need to create linear regression models and conduct correlation tests for single predictors
 # to investigate whether there is a linear relationship between each measure and outcome (PCS and MCS)
@@ -122,8 +122,8 @@ model_mcs_ais <- lm(SF36.MCS ~ Athens.Insomnia.Scale, data=liver_dfclean) #This 
 summary(model_mcs_ais)
 plot(fitted(model_mcs_ais),resid(model_mcs_ais)) #Checking for homoscedasticity, looks ok
 #Correlation Work
-corr_pcs_ais <- cor.test(liver_dfclean$SF36.PCS, liver_dfclean$Athens.Insomnia.Scale)
-corr_pcs_ais
+corr_mcs_ais <- cor.test(liver_dfclean$SF36.MCS, liver_dfclean$Athens.Insomnia.Scale)
+corr_mcs_ais
 # Now build up to multiple predictor models
 # A model predicting physical quality of life using the continuous sleep disturbance scores.
 # Fit the model
@@ -137,8 +137,8 @@ MCS_model_continuous <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Slee
 summary(MCS_model_continuous)
 plot(fitted(MCS_model_continuous),resid(MCS_model_continuous)) #Checking for homoscedasticity, looks ok
 
-#2: A model predicting physical quality of life using the binary sleep disturbance scores.
-#4: A model predicting mental quality of life using the binary sleep disturbance scores.
+# A model predicting physical quality of life using the binary sleep disturbance scores.
+# A model predicting mental quality of life using the binary sleep disturbance scores.
 
 
 
