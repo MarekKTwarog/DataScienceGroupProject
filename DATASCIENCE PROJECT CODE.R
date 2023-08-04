@@ -40,13 +40,60 @@ dim(liver_dfclean)
 install.packages("corrplot")
 library(corrplot)
 
+#'To determine whether we can conduct a linear reegression model to imput missing NA
+#' values for the PSQI variable, we split the dataset into two dataframes, one which
+#' contains only complete case values with respect to PSQI and another which only
+#' contains rows that are found as NA's for thee PSQI variable. We then take the
+#' mean of the variables "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale", and
+#' "Epworth.Sleepiness.Scale" fir each of the dataframes (with and without PSQI NA's)
+#' The means are then used to conduct a t-statistic which tests to see whether
+#' there is a significant difference in means which will let us know whether we should
+#' consider our missing PSQI data as MCAR or MAR. If the means are found to be
+#' significantly different from each other then this tells us that the missing NA
+#' values are not MCAR and thus a linear regression model cannot be used to
+#' impute themissing NA values for PSQ1.
+
+na_rows <- is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)
+df_with_na <- liver_dfclean[na_rows, ]
+df_without_na <- liver_dfclean[!na_rows, ]
+# Create two data frames, one with NA values and one without NA values in Pittsburgh column
+df_with_na <- df[is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score), ]
+df_without_na <- df[!is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score), ]
+# Calculate means for variables in df_with_na
+mean_with_na <- colMeans(df_with_na[c("Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale", "Epworth.Sleepiness.Scale")], na.rm = TRUE)
+mean_with_na
+# Calculate means for variables in df_without_na
+mean_without_na <- colMeans(df_without_na[c("Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale", "Epworth.Sleepiness.Scale")], na.rm = TRUE)
+mean_without_na
+# Perform t-test
+t_test_result <- t.test(mean_with_na, mean_without_na)
+# Print the t-test result
+print(t_test_result)
+
+#'we employed a Welch Two Sample t-test to investigate potential differences in
+#'the means of three sleep-related variables, namely "Athens.Insomnia.Scale,"
+#'"Berlin.Sleepiness.Scale," and "Epworth.Sleepiness.Scale," between two separate
+#'dataframes, "mean_with_na" and "mean_without_na." The t-test was performed to
+#'ascertain whether there is a statistically significant disparity in the means
+#'of these variables across the two dataframes. The t-test results indicated a
+#'small t-value of 0.12858, with degrees of freedom (df) calculated as 3.9558.
+#'The corresponding p-value was found to be 0.904, suggesting no significant
+#'difference in means. Additionally, the 95 percent confidence interval (-9.294151, 10.192629)
+#'included 0, further supporting the null hypothesis of no significant difference.
+#'Consequently, we conclude that there is no evidence to reject the null hypothesis,
+#'indicating that the means of the three sleep-related variables are not significantly
+#'different between the two dataframes. Therefore, because the means of variables
+#'are not significantly different from each other they can be considered MCAR and so
+#'it is safe to conduct a linear regression model to impute missing values for
+#'Pittsburgh.Sleep.Quality.Index.Score.
+
 #' Here we use the cor() function to find the correlation between each variable
 #' then we use the corrplot function to crease a plot that will help easily visualize
 #' which variable has the strongest correlation with PSQ1. Based on the results,
-#' wee find that the Athens.Insomnia.Scale has the strongest correlation with
+#' we find that the Athens.Insomnia.Scale has the strongest correlation with
 #' PSQ1 and thus we use the lm() function to build a linear regression model between
 #' the two variables so that it can then be used along with the predict() function
-#' to predict values for NA in the PSQ1 variable column. The values predictred are
+#' to predict values for NA in the PSQ1 variable column. The values predicted are
 #' then used to replace the NA values in the PSQ1 column,
 
 correlation <- cor(liver_dfclean, use = "pairwise")
@@ -56,7 +103,6 @@ liver_dfclean$PredictedPSQ1 <- predict(lm_model, newdata = liver_dfclean)
 
 # Replace NA values in 'PSQ1' with their respective 'y_predicted' values
 liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score[is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)] <- liver_dfclean$PredictedPSQ1[is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)]
-
 
 #'Here we convert categorical variables into factors by first assigning all variables
 #'needing conversion to "categorical_var", then we implement a for loop which will
