@@ -17,7 +17,6 @@ liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
                              "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
                              "SF36.PCS", "SF36.MCS")]
 
-
 #'Using glimpse() to display column names, analyze structure of data, identify
 #'missing values/zeros and to see what type each variable is coded as. Status()
 #'was used to check p_na values for each variable, values with p_na <0.2 indicate
@@ -59,7 +58,7 @@ liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score[is.na(liver_dfclean$Pittsburg
 #' temporary 'col' variable aprt of the for loop is assigneed to each variable in
 #' the given list one by one until all variables have been converted to factors.
 categorical_var <- c("Gender", "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
-                     "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid")
+                     "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Berlin.Sleepiness.Scale")
 for (col in categorical_var) {
   liver_dfclean[[col]] <- factor(liver_dfclean[[col]])
 }
