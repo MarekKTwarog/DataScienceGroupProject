@@ -12,10 +12,11 @@ liver_df <- read.csv("project_data.csv")
 #'Creating a new dataframe with only the variables that we need to conduct our
 #'analysis of the dataset
 liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
-"Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
-"Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
-"Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
-"SF36.PCS", "SF36.MCS")]
+                             "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
+                             "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
+                             "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
+                             "SF36.PCS", "SF36.MCS")]
+
 
 #'Using glimpse() to display column names, analyze structure of data, identify
 #'missing values/zeros and to see what type each variable is coded as. Status()
@@ -24,7 +25,32 @@ liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
 #'many unique values are present per variable, this can help easily identify
 #'which variables should be categorical.
 glimpse(liver_dfclean)
-status(liver_dfclean)
+status(liver_dfclean)# p_na values for PSQI variabee is 0.317164179 which is high, the NA values will need to be imputatd
+dim(liver_dfclean)
+#Installling corrplot package so I can generate a correlation plot so I can determine
+#' which variable has highest correlation with PSQ1 so I can then create a linear
+#' regression model between the two variables and then use that model to predict
+#' NA values for PSQ1
+install.packages("corrplot")
+library(corrplot)
+
+#' Here we use the cor() function to find the correlation between each variable
+#' then we use the corrplot function to crease a plot that will help easily visualize
+#' which variable has the strongest correlation with PSQ1. Based on the results,
+#' wee find that the Athens.Insomnia.Scale has the strongest correlation with
+#' PSQ1 and thus we use the lm() function to build a linear regression model between
+#' the two variables so that it can then be used along with the predict() function
+#' to predict values for NA in the PSQ1 variable column. The values predictred are
+#' then used to replace the NA values in the PSQ1 column,
+
+correlation <- cor(liver_dfclean, use = "pairwise")
+corrplot(correlation, type = "lower", diag = FALSE)
+lm_model <- lm(Pittsburgh.Sleep.Quality.Index.Score ~ Athens.Insomnia.Scale, data = liver_dfclean, na.action = na.exclude)
+liver_dfclean$PredictedPSQ1 <- predict(lm_model, newdata = liver_dfclean)
+
+# Replace NA values in 'PSQ1' with their respective 'y_predicted' values
+liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score[is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)] <- liver_dfclean$PredictedPSQ1[is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)]
+
 
 #'Here we convert categorical variables into factors by first assigning all variables
 #'needing conversion to "categorical_var", then we implement a for loop which will
@@ -69,8 +95,5 @@ glimpse(liver_dfclean2)#variables successfully converted to factors
 
 #'The final set requires the removal of NA values from the dataset, this is done
 #'using the na.omit function
+
 liver_dfclean3 <- na.omit(liver_dfclean2)
-
-
-
-
