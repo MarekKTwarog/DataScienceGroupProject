@@ -111,17 +111,6 @@ prevalence <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Pittsbur
 # Extract the table
 write.csv(prevalence, "prevalence.csv")
 
-# Calculate the prevalence of sleep disturbance for each scale
-prev_berlin <- sum(Berlin.Sleepiness.Scale == 1) / nrow(liver_dfclean3)
-prev_epworth <- sum(Epworth_binary == 1) / nrow(liver_dfclean3)
-prev_pittsburgh <- sum(Pittsburgh_binary == 1) / nrow(liver_dfclean3)
-prev_athens <- sum(Athens_binary == 1) / nrow(liver_dfclean3)
-
-# Create a data frame with the prevalence values
-prevalence_df <- data.frame(
-  Scale = c("Berlin", "Epworth", "Pittsburgh", "Athens"),
-  Prevalence = c(prev_berlin, prev_epworth, prev_pittsburgh, prev_athens)
-)
 
 #' Trying to calculate the prevalence by taking into consideration the observations without missing values for each scale
 #' Each scale has different number of observations with missing values
@@ -129,20 +118,37 @@ prevalence_df <- data.frame(
 detach(liver_dfclean3)
 attach(liver_dfclean2)
 
+
 # Check the number of observations with missing values for each scale
 missing_berlin <- sum(is.na(Berlin.Sleepiness.Scale))
 missing_epworth <- sum(is.na(Epworth_binary))
 missing_pittsburgh <- sum(is.na(Pittsburgh_binary))
 missing_athens <- sum(is.na(Athens_binary))
 
-# Calculate the prevalence of sleep disturbance for each scale
-prev_berlin <- sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE) / (nrow(liver_dfclean2) - missing_berlin)
-prev_epworth <- sum(Epworth_binary == 1, na.rm=TRUE) / (nrow(liver_dfclean2) - missing_epworth)
-prev_pittsburgh <- sum(Pittsburgh_binary == 1, na.rm = TRUE) / (nrow(liver_dfclean2) - missing_pittsburgh)
-prev_athens <- sum(Athens_binary == 1, na.rm = TRUE) / (nrow(liver_dfclean2) - missing_athens)
+# Calculate the number of cases (positive outcomes) for sleep disturbance for each scale
+berlin_cases <- sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE)
+epworth_cases <- sum(Epworth_binary == 1, na.rm = TRUE)
+pittsburgh_cases <- sum(Pittsburgh_binary == 1, na.rm = TRUE)
+athens_cases <- sum(Athens_binary == 1, na.rm = TRUE)
+
+# Calculate the total number of valid observations for each scale
+berlin_pop <- sum(!is.na(Berlin.Sleepiness.Scale))  # equal to : nrow(liver_dfclean2) - missing_berlin & to this sum(complete.cases(Berlin.Sleepiness.Scale))
+epworth_pop <- sum(!is.na(Epworth_binary))
+pittsburgh_pop <- sum(!is.na(Pittsburgh_binary))
+athens_pop <- sum(!is.na(Athens_binary))
+
+# Calculate the prevalence of sleep disturbance with confidence interval set at 0.95 for each scale using prop.test()
+prev_berlin <- prop.test(x = berlin_cases, n = berlin_pop, conf.level = 0.95)
+prev_epworth <- prop.test(x = epworth_cases,  n = epworth_pop, conf.level = 0.95)
+prev_pittsburgh <- prop.test(x = pittsburgh_cases, n = pittsburgh_pop, conf.level = 0.95)
+prev_athens <- prop.test(x = athens_cases, n = athens_pop, conf.level = 0.95)
 
 # Create a data frame with the prevalence values
-prevalence_NAs <- data.frame(
+prevalence_df <- data.frame(
   Scale = c("Berlin", "Epworth", "Pittsburgh", "Athens"),
-  Prevalence = c(prev_berlin, prev_epworth, prev_pittsburgh, prev_athens)
+  Prevalence = c(prev_berlin$estimate, prev_epworth$estimate, prev_pittsburgh$estimate, prev_athens$estimate),
+  CI.Lower = c(prev_berlin$conf.int[1], prev_epworth$conf.int[1], prev_pittsburgh$conf.int[1], prev_athens$conf.int[1]),
+  CI.Upper = c(prev_berlin$conf.int[2], prev_epworth$conf.int[2], prev_pittsburgh$conf.int[2], prev_athens$conf.int[2])
 )
+
+
