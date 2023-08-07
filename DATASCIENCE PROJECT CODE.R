@@ -179,6 +179,7 @@ MCS.binom.step.forw <- stepAIC(MCS.binom.mod.null, direction = "forward", trace 
 summary(MCS.binom.step.forw)
 # --------------------------------------------
 # Mixed model
+library(car) #loading vif function
 # Define the PCS null model
 PCS.mix.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfclean3)
 
@@ -190,7 +191,14 @@ PCS.mix.step.forw <- stepAIC(PCS.mix.mod.null, direction = "forward", trace = F,
 
 # View the final model
 summary(PCS.mix.step.forw)
-
+#Check for collinearity
+vif(PCS.mix.step.forw)
+#Comparing to full varaible inclusion
+anova(PCS.mix.mod.full, PCS.mix.step.forw)
+#We see there is not a stat. significant value for inclusion of PSQI
+#Checking AICs to further investigate
+AIC(PCS.mix.mod.full)
+AIC(PCS.mix.step.forw)
 # Define the MCS null model
 MCS.mix.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfclean3)
 
@@ -202,4 +210,11 @@ MCS.mix.step.forw <- stepAIC(MCS.mix.mod.null, direction = "forward", trace = F,
 
 # View the final model
 summary(MCS.mix.step.forw)
-
+#Check for collinearity
+vif(MCS.mix.step.forw)
+#comparing to full variable inclusion
+anova(MCS.mix.mod.full, MCS.mix.step.forw)
+#We see there is not a stat. significant value for inclusion of PSQI
+#Checking AICs to further investigate
+AIC(MCS.mix.mod.full)
+AIC(MCS.mix.step.forw)
