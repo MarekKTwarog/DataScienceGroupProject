@@ -194,7 +194,7 @@ summary(PCS.mix.step.forw)
 #Check for collinearity
 vif(PCS.mix.step.forw)
 #Comparing to full varaible inclusion
-anova(PCS.mix.mod.full, PCS.mix.step.forw)
+anova(PCS.mix.step.forw, PCS.mix.mod.full)
 #We see there is not a stat. significant value for inclusion of PSQI
 #Checking AICs to further investigate
 AIC(PCS.mix.mod.full)
@@ -213,7 +213,7 @@ summary(MCS.mix.step.forw)
 #Check for collinearity
 vif(MCS.mix.step.forw)
 #comparing to full variable inclusion
-anova(MCS.mix.mod.full, MCS.mix.step.forw)
+anova(MCS.mix.step.forw, MCS.mix.mod.full)
 #We see there is not a stat. significant value for inclusion of PSQI
 #Checking AICs to further investigate
 AIC(MCS.mix.mod.full)
