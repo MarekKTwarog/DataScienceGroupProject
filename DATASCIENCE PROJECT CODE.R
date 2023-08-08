@@ -6,9 +6,9 @@
 #### Goal 1: Description of relevant data
 
 #Loading packages for data cleaning / analysis
-install.packages("tidyverse")
-install.packages("funModeling")
-install.packages("Hmisc")
+#install.packages("tidyverse")
+#install.packages("funModeling")
+#install.packages("Hmisc")
 library(tidyverse)
 library(funModeling)
 library(Hmisc)
@@ -37,7 +37,7 @@ dim(liver_dfclean)
 #' which variable has highest correlation with PSQ1 so I can then create a linear
 #' regression model between the two variables and then use that model to predict
 #' NA values for PSQ1
-install.packages("corrplot")
+#install.packages("corrplot")
 library(corrplot)
 
 #' Here we use the cor() function to find the correlation between each variable
@@ -119,19 +119,22 @@ detach(liver_dfclean3)
 attach(liver_dfclean2)
 
 
-# Check the number of observations with missing values for each scale
+# Learn more about the number of positive, negative, and missing test results for each scale using summary()
+summary(liver_dfclean2)
+
+# Store the number of observations with missing values for each scale as: missing_"scale name"
 missing_berlin <- sum(is.na(Berlin.Sleepiness.Scale))
 missing_epworth <- sum(is.na(Epworth_binary))
 missing_pittsburgh <- sum(is.na(Pittsburgh_binary))
 missing_athens <- sum(is.na(Athens_binary))
 
-# Calculate the number of cases (positive outcomes) for sleep disturbance for each scale
+# Store the number of cases (positive outcomes) for sleep disturbance for each scale as: "scale name"_cases
 berlin_cases <- sum(Berlin.Sleepiness.Scale == 1, na.rm=TRUE)
 epworth_cases <- sum(Epworth_binary == 1, na.rm = TRUE)
 pittsburgh_cases <- sum(Pittsburgh_binary == 1, na.rm = TRUE)
 athens_cases <- sum(Athens_binary == 1, na.rm = TRUE)
 
-# Calculate the total number of valid observations for each scale
+# Calculate the total number of valid observations for each scale and store them as the variable: "scale name"_pop
 berlin_pop <- sum(!is.na(Berlin.Sleepiness.Scale))  # equal to : nrow(liver_dfclean2) - missing_berlin & to this sum(complete.cases(Berlin.Sleepiness.Scale))
 epworth_pop <- sum(!is.na(Epworth_binary))
 pittsburgh_pop <- sum(!is.na(Pittsburgh_binary))
@@ -164,6 +167,71 @@ ggplot(data = data_df, aes(x = rank, y = Prevalence.Percent)) +
   theme_bw() +
   geom_errorbar(aes(ymin = CI.Lower , ymax = CI.Upper), width = 0.1) +
   geom_point() +
+  geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%\n(", round(CI.Lower, 2), "-", round(CI.Upper, 2), ")")), #%\n( to create a line break
+            vjust = -1, hjust = 0.5, size = 3, color = "black") +  # Labeling confidence intervals
   scale_x_continuous(breaks = data_df$rank, labels = data_df$Scale, name = "Sleep Disturbance Scales") +
-  scale_y_continuous(limits = c(0,100), name = "Cases per 100 individuals at risk") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1))
+  scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
+  labs(caption = "Confidence intervals indicate uncertainty.") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1),
+        plot.caption = element_text(size = 9, color = "gray", hjust = 0))
+
+
+ggplot(data = data_df, aes(x = Scale, y = Prevalence.Percent, fill = Scale)) +
+  theme_bw() +
+  geom_bar(stat = "identity", position = "dodge") +
+  geom_errorbar(aes(ymin = CI.Lower , ymax = CI.Upper), position = position_dodge(width = 0.9), width = 0.2) +
+  geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%")),
+            vjust = -3, size = 3, position = position_dodge(width = 0.9), color = "black") +
+  scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
+  labs(title = "Prevalence of Sleep Disturbance Across Scales",
+       caption = "Confidence intervals indicate uncertainty.") +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1),
+        plot.caption = element_text(size = 9, color = "gray", hjust = 0)) +
+  guides(fill = "none") # Remove the fill legend because its unnecessary
+
+
+
+# Conditional probability of low quality of life given that there is sleep disturbance as measured by that specific scale.
+# Interested to investigate the likelihood that an individual with sleep disturbance
+# ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
+# Event A: Low quality of life defined by a chosen threshold
+# Event B: Sleep disturbance based on specific scale
+# P(A|B) = = Number of individuals with both A and B / Number of individuals with B
+
+# Define the function to calculate conditional probability
+calculate_conditional_prob <- function(column_name, sf36_pcs_threshold, sf36_mcs_threshold) {
+  # Calculate the number of individuals with sleep disturbance and low quality of life for PCS and MCS
+  low_quality_pcs <- sum(liver_dfclean3[[column_name]] == 1 & liver_dfclean3$SF36.PCS <= sf36_pcs_threshold, na.rm = TRUE)
+  low_quality_mcs <- sum(liver_dfclean3[[column_name]] == 1 & liver_dfclean3$SF36.MCS <= sf36_mcs_threshold, na.rm = TRUE)
+
+  # Calculate the number of individuals with sleep disturbance for the scale
+  sleep_disturbance <- sum(liver_dfclean3[[column_name]] == 1, na.rm = TRUE)
+
+  # Calculate conditional probabilities for PCS and MCS
+  conditional_prob_pcs <- low_quality_pcs / sleep_disturbance
+  conditional_prob_mcs <- low_quality_mcs / sleep_disturbance
+
+  # Return the results
+  return(list(
+    scale_name = column_name,
+    conditional_prob_pcs = conditional_prob_pcs,
+    conditional_prob_mcs = conditional_prob_mcs
+  ))
+}
+
+# Define the sleep disturbance scale column names
+sleep_scale_columns <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
+
+# Thresholds for SF-36 scores
+sf36_pcs_threshold <- 33
+sf36_mcs_threshold <- 36
+
+results <- sapply(sleep_scale_columns, function(scale_column) { # sapply will apply the function to each element in sleep_scale_columns
+  calculate_conditional_prob(column_name = scale_column,
+                             sf36_pcs_threshold = sf36_pcs_threshold,
+                             sf36_mcs_threshold = sf36_mcs_threshold)
+}, simplify = "data.frame")
+
+
+
+
