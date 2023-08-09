@@ -172,7 +172,7 @@ glimpse(liver_dfcleanCC)#variables successfully converted to factors
 #'The final set requires the removal of NA values from the imputed dataset, this is done
 #'using the na.omit function
 
-liver_dfcleanIMP <- na.omit(liver_dfcleanIMP)
+liver_dfcleanIMPrmNA <- na.omit(liver_dfcleanIMP)
 
 ################################################################################
 
