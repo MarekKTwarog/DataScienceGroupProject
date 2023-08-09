@@ -159,6 +159,8 @@ data_df <- data.frame(
   CI.Upper = c(prev_berlin$conf.int[2], prev_epworth$conf.int[2], prev_pittsburgh$conf.int[2], prev_athens$conf.int[2]) * 100
 )
 
+
+
 data_df <- data_df[sort.list(data_df$Prevalence.Percent),]
 data_df$rank <- 1:nrow(data_df)
 
@@ -233,5 +235,67 @@ results <- sapply(sleep_scale_columns, function(scale_column) { # sapply will ap
 }, simplify = "data.frame")
 
 
+# Chi-square test of independence to assess the association between sleep disturbance (presence/absence) based on different scales and low quality of life
+
+## Create a function to perform chi-square test for a specific scale and low quality measure
+perform_chi_square <- function(scale_column, low_quality_column, low_quality_threshold) {
+  contingency_table <- table(liver_dfclean3[[scale_column]] == 1, liver_dfclean3[[low_quality_column]] <= low_quality_threshold)
+  chi_square_result <- chisq.test(contingency_table)
+  return(chi_square_result)
+}
+
+# List of scales and their corresponding low quality of life thresholds
+scales <- c("Berlin.Sleepiness.Scale", "Epworth_binary", "Pittsburgh_binary", "Athens_binary")
+low_quality_columns <- c("SF36.PCS", "SF36.MCS")
+low_quality_threshold <- c(33, 36)  # Thresholds for SF36.PCS and SF36.MCS
+
+# Perform chi-square tests for each scale and low quality measure combination
+chi_square_results <- list()
+
+for (scale in scales) {
+  chi_square_results[[scale]] <- list()
+  for (i in seq_along(low_quality_columns)) {
+    result <- perform_chi_square(scale_column = scale, low_quality_column = low_quality_columns[i], low_quality_threshold = low_quality_threshold[i])
+    chi_square_results[[scale]][[low_quality_columns[i]]] <- result
+  }
+}
+
+# Print the results
+for (scale in scales) {
+  for (low_quality_col in low_quality_columns) {
+    cat("Scale:", scale, ", Low Quality Measure:", low_quality_col, "\n")
+    print(chi_square_results[[scale]][[low_quality_col]])
+    cat("\n")
+  }
+}
 
 
+library(ggplot2)
+
+# Create a data frame with the results
+results <- data.frame(
+  Scale = c("Berlin.Sleepiness.Scale", "Berlin.Sleepiness.Scale", "Epworth_binary", "Epworth_binary", "Pittsburgh_binary", "Pittsburgh_binary", "Athens_binary", "Athens_binary"),
+  Low_Quality_Measure = rep(c("SF36.PCS", "SF36.MCS"), each = 4),
+  X_squared = c(11.116, 1.5749, 11.268, 10.58, 6.8435, 18.42, 6.3135, 24.347),
+  p_value = c(0.0008558, 0.2095, 0.0007884, 0.001143, 0.008897, 1.772e-05, 0.01198, 8.044e-07)
+)
+
+# Create a bar plot
+ggplot(results, aes(x = Scale, y = X_squared, fill = Low_Quality_Measure)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Chi-squared Test Results",
+       x = "Scale and Low Quality Measure",
+       y = "X-squared Value") +
+  theme_minimal()
+
+# Create a dot plot for p-values
+ggplot(results, aes(x = p_value, y = reorder(Scale, p_value))) +
+  geom_point(size = 3, aes(color = Low_Quality_Measure)) +
+  labs(title = "Chi-squared Test Results",
+       x = "p_value",
+       y = "Scale",
+       color = "Low Quality Measure") +
+  theme_minimal() +
+  scale_x_log10()  # Use log scale for better visualization of p-values
+
+detach(liver_dfclean2)
