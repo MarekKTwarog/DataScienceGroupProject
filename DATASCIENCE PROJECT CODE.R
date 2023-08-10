@@ -170,8 +170,6 @@ imputation_col <- liver_dfclean[c("Pittsburgh.Sleep.Quality.Index.Score", "Athen
 PSQIimputations <- mice(imputation_col, method = "pmm", m = 1, maxit = 1, print = FALSE)
 PSQI_imputed_values <- complete(PSQIimputations)
 liver_dfcleanPW_IMP$Pittsburgh.Sleep.Quality.Index.Score <- PSQI_imputed_values$Pittsburgh.Sleep.Quality.Index.Score
-#Remove NA values from liver_dfcleanPW_IMP dataframe
-liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 
 ################################################################################
 ################################################################################
@@ -201,8 +199,6 @@ lm_model <- lm(Pittsburgh.Sleep.Quality.Index.Score ~ Athens.Insomnia.Scale, dat
 liver_dfcleanGLM_IMP$PredictedPSQ1 <- predict(lm_model, newdata = liver_dfclean)
 # Replace NA values in 'PSQ1' with their respective 'y_predicted' values
 liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score[is.na(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score)] <- liver_dfcleanGLM_IMP$PredictedPSQ1[is.na(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score)]
-#Remove NA values from liver_dfcleanPW_IMP dataframe
-liver_dfcleanGLM_IMPrmNA <- na.omit(liver_dfcleanGLM_IMP)
 
 ################################################################################
 ################################################################################
@@ -327,6 +323,19 @@ for (col in categorical_var2) {
 glimpse(liver_dfcleanGLM_IMP)#variables successfully converted to factors
 glimpse(liver_dfcleanCC)#variables successfully converted to factors
 glimpse(liver_dfcleanPW_IMP)#variables successfully converted to factors
+
+################################################################################
+################################################################################
+
+################################################################################
+####################REMOVING REMAINING NA's#####################################
+################################################################################
+
+#Remove NA values from liver_dfcleanPW_IMP dataframe
+liver_dfcleanGLM_IMPrmNA <- na.omit(liver_dfcleanGLM_IMP)
+
+#Remove NA values from liver_dfcleanPW_IMP dataframe
+liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 
 ################################################################################
 ################################################################################
