@@ -11,6 +11,10 @@
 #Loading packages for data cleaning / analysis
 #install.packages("tidyverse")
 library(tidyverse)
+#install.packages("funModeling")
+library(funModeling)
+install.packages("mice")
+library(mice)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
@@ -351,12 +355,11 @@ prevalence <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Pittsbur
 # Extract the table
 write.csv(prevalence, "prevalence.csv")
 
-
 #' Trying to calculate the prevalence by taking into consideration the observations without missing values for each scale
 #' Each scale has different number of observations with missing values
 #' Detach liver_dfcleanIMPrmNA as we need to use the previous dataframe where NA's where not omitted yet (complete case).
 detach(liver_dfcleanCC)
-attach(liver_dfcleanIMP)
+attach(liver_dfcleanPW_IMP)
 
 # Check the number of observations with missing values for each scale
 missing_berlin <- sum(is.na(Berlin.Sleepiness.Scale))
@@ -413,18 +416,6 @@ prevalence_df <- prevalence_df[sort.list(prevalence_df$Prevalence.Percent),]
 prevalence_df$rank <- 1:nrow(prevalence_df )
 
 library(ggplot2)
-ggplot(data = prevalence_df, aes(x = rank, y = Prevalence.Percent)) +
-  theme_bw() +
-  geom_errorbar(aes(ymin = CI.Lower , ymax = CI.Upper), width = 0.1) +
-  geom_point() +
-  geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%\n(", round(CI.Lower, 2), "-", round(CI.Upper, 2), ")")), #%\n( to create a line break
-            vjust = -1, hjust = 0.5, size = 3, color = "black") +  # Labeling confidence intervals
-  scale_x_continuous(breaks = data_df$rank, labels = data_df$Scale, name = "Sleep Disturbance Scales") +
-  scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
-  labs(caption = "Confidence intervals indicate uncertainty.") +
-  theme(axis.text.x = element_text(angle = 90, hjust = 1),
-        plot.caption = element_text(size = 9, color = "gray", hjust = 0))
-
 
 ggplot(data = prevalence_df, aes(x = Scale, y = Prevalence.Percent, fill = Scale)) +
   theme_bw() +
@@ -439,7 +430,11 @@ ggplot(data = prevalence_df, aes(x = Scale, y = Prevalence.Percent, fill = Scale
         plot.caption = element_text(size = 9, color = "gray", hjust = 0)) +
   guides(fill = "none") # Remove the fill legend because its unnecessary
 
-detach(liver_dfcleanIMP)
+detach(liver_dfcleanPW_IMP)
+
+
+table(liver_dfcleanPW_IMPrmNA$SF36.MCS <= 36)
+table(liver_dfcleanPW_IMPrmNA$Athens_binary)
 
 # We're interested to investigate the likelihood that an individual with sleep disturbance
 # ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
@@ -449,7 +444,7 @@ detach(liver_dfcleanIMP)
 # Define the function to generate a contingency table
 generate_contingency_table <- function(scale_column, sleep_column, sf36_threshold) {
   sleep_disturbance <- liver_dfcleanPW_IMPrmNA[[scale_column]] == 1
-  low_quality_sf36 <- liver_dfcleanPW_IMPrmNA[[sleep_column]] <= sf36_threshold
+  low_quality_sf36 <- liver_dfcleanPW_IMPrmNA[[sf36_column]] <= sf36_threshold
 
   contingency_table <- table(sleep_disturbance, low_quality_sf36)
   return(contingency_table)
@@ -489,32 +484,6 @@ for (scale_column in sleep_scale_columns) {
   chi_square_results[[scale_column]][[sf36_column]] <- chi_square_result
   }
 }
-
-# Define the function to calculate conditional probability
-calculate_conditional_prob <- function(column_name, sf36_pcs_threshold, sf36_mcs_threshold) {
-  # Calculate the number of individuals with sleep disturbance and low quality of life for PCS and MCS
-  low_quality_pcs <- sum(liver_dfcleanPW_IMPrmNA[[column_name]] == 1 & liver_dfcleanIMPrmNA$SF36.PCS <= sf36_pcs_threshold, na.rm = TRUE)
-  low_quality_mcs <- sum(liver_dfcleanPW_IMPrmNA[[column_name]] == 1 & liver_dfcleanIMPrmNA$SF36.MCS <= sf36_mcs_threshold, na.rm = TRUE)
-
-  # Calculate conditional probabilities for PCS and MCS
-  conditional_prob_pcs <- (low_quality_pcs / sleep_disturbance) * 100
-  conditional_prob_mcs <- (low_quality_mcs / sleep_disturbance) * 100
-
-  # Define the sleep disturbance scale column names
-  sleep_scale_columns <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
-
-  # Return the results
-  return(list(
-    scale_name = column_name,
-    conditional_prob_pcs = conditional_prob_pcs,
-    conditional_prob_mcs = conditional_prob_mcs
-  ))
-}
-cond.prob.results <- data.frame(sapply(sleep_scale_columns, function(scale_column) {
-  calculate_conditional_prob(column_name = scale_column,
-                             sf36_pcs_threshold = sf36_pcs_threshold,
-                             sf36_mcs_threshold = sf36_mcs_threshold)}))
-
 
 # Create a data frame with the chi-square results
 chi_square_res <- data.frame(
