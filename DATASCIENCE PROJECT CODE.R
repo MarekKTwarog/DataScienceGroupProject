@@ -133,7 +133,7 @@ PCS.cont.lm.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfclean3)
 PCS.cont.lm.mod.full <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale, data = liver_dfclean3)
 
 # Perform forward stepwise selection
-PCS.cont.lm.step.forw <- stepAIC(PCS.cont.lm.mod.null, direction = "forward", trace = F, scope = list(upper = cont.lm.mod.full, lower = cont.lm.mod.null))
+PCS.cont.lm.step.forw <- stepAIC(PCS.cont.lm.mod.null, direction = "forward", trace = F, scope = list(upper = PCS.cont.lm.mod.full, lower = PCS.cont.lm.mod.null))
 
 # View the final model
 summary(PCS.cont.lm.step.forw)
@@ -145,7 +145,7 @@ MCS.cont.lm.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfclean3)
 MCS.cont.lm.mod.full <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale, data = liver_dfclean3)
 
 # Perform forward stepwise selection
-MCS.cont.lm.step.forw <- stepAIC(MCS.cont.lm.mod.null, direction = "forward", trace = F, scope = list(upper = cont.lm.mod.full, lower = cont.lm.mod.null))
+MCS.cont.lm.step.forw <- stepAIC(MCS.cont.lm.mod.null, direction = "forward", trace = F, scope = list(upper = MCS.cont.lm.mod.full, lower = MCS.cont.lm.mod.null))
 
 # View the final model
 summary(MCS.cont.lm.step.forw)
