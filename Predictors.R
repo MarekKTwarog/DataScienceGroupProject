@@ -80,9 +80,9 @@ library(MASS)
 PSQI_full_rmNA <- glm(Pittsburgh_binary~
                    Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
                    Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                   Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanIMPrmNA), family = "binomial")
+                   Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPW_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
-glimpse(PSQI_full_rmNA)
+glimpse(liver_dfcleanPW_IMPrmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
 PSQI.step.back.rmNA <- stepAIC(PSQI_full_rmNA)
 summary(PSQI.step.back.rmNA)
@@ -91,7 +91,7 @@ summary(PSQI.step.back.rmNA)
 ESS_full_rmNA <- glm(Epworth_binary~
                   Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
                   Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanIMPrmNA), family = "binomial")
+                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPW_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(ESS_full_rmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -103,7 +103,7 @@ summary(ESS.step.back.rmNA)
 AIS_full_rmNA <- glm(Athens_binary~
                   Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
                   Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanIMPrmNA), family = "binomial")
+                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPW_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(AIS_full_rmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -115,10 +115,9 @@ summary(AIS.step.back.rmNA)
 BSS_full_rmNA <- glm(Berlin.Sleepiness.Scale~
                   Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
                   Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanIMPrmNA), family = "binomial")
+                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPW_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(BSS_full_rmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
 BSS.step.back.rmNA <- stepAIC(BSS_full_rmNA)
 summary(BSS.step.back.rmNA)
-
