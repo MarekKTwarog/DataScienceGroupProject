@@ -11,6 +11,10 @@
 #Loading packages for data cleaning / analysis
 install.packages("tidyverse")
 library(tidyverse)
+install.packages("funModeling")
+library(funModeling)
+install.packages("mice")
+library(mice)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
@@ -339,4 +343,3 @@ liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 
 ################################################################################
 ################################################################################
-
