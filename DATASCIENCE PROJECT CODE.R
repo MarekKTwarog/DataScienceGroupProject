@@ -209,10 +209,10 @@ prev_berlin <- prop.test(x = berlin_cases, n = berlin_pop, conf.level = 0.95)
 # Instead of doing it for every measure, i will use a loop that will do it for each sleep disturbance measure.
 # Create a list of sleep disturbance variables using list()
 sleep_vars <- list(
-  Berlin = Berlin.Sleepiness.Scale,
-  Epworth = Epworth_binary,
-  Pittsburgh = Pittsburgh_binary,
-  Athens = Athens_binary
+  BSS = Berlin.Sleepiness.Scale,
+  ESS = Epworth_binary,
+  PSQI = Pittsburgh_binary,
+  AIS = Athens_binary
 )
 
 # Initialize an empty dataframe to store results
@@ -246,7 +246,7 @@ for (scale_name in names(sleep_vars)) {
 }
 
 prevalence_df <- prevalence_df[sort.list(prevalence_df$Prevalence.Percent),]
-prevalence_df $rank <- 1:nrow(prevalence_df )
+prevalence_df$rank <- 1:nrow(prevalence_df )
 
 library(ggplot2)
 ggplot(data = prevalence_df, aes(x = rank, y = Prevalence.Percent)) +
@@ -313,12 +313,16 @@ for (scale_column in sleep_scale_columns) {
 
     contingency_table <- generate_contingency_table(scale_column, sf36_column, sf36_threshold)
 
-    # Create the file name for the contingency table
-    file_name <- paste(scale_column, sf36_column, "contingency_table.csv", sep = "_")
-
-    # Save the contingency table as a CSV file
-    write.csv(contingency_table, file_name)
+    # Perform chi-square test
+    chi_square_result <- chisq.test(contingency_table)
+    chi_square_results[[scale_column]][[sf36_column]] <- chi_square_result
   }
+
+  # Create the file name for the contingency table
+  file_name <- paste(scale_column, "contingency_table.csv", sep = "_")
+
+  # Save the contingency table as a CSV file
+  write.csv(contingency_table, file_name)
 }
 
 # Define the function to calculate conditional probability
@@ -347,35 +351,7 @@ cond.prob.results <- data.frame(sapply(sleep_scale_columns, function(scale_colum
                              sf36_mcs_threshold = sf36_mcs_threshold)}))
 
 
-# Chi-square test of independence to assess the association between sleep disturbance (presence/absence) based on different scales and low quality of life
-
-## Create a function to perform chi-square test for a specific scale and low quality measure
-perform_chi_square <- function(scale_column, low_quality_column, low_quality_threshold) {
-  contingency_table <- table(liver_dfcleanIMPrmNA[[scale_column]] == 1, liver_dfcleanIMPrmNA[[low_quality_column]] <= low_quality_threshold)
-  chi_square_result <- chisq.test(contingency_table)
-  return(chi_square_result)
-}
-
-# List of scales and their corresponding low quality of life thresholds
-scales <- c("Berlin.Sleepiness.Scale", "Epworth_binary", "Pittsburgh_binary", "Athens_binary")
-low_quality_columns <- c("SF36.PCS", "SF36.MCS")
-low_quality_threshold <- c(33, 36)  # Thresholds for SF36.PCS and SF36.MCS
-
-# Perform chi-square tests for each scale and low quality measure combination
-chi_square_results <- list()
-
-for (scale in scales) {
-  chi_square_results[[scale]] <- list()
-  for (i in seq_along(low_quality_columns)) {
-    result <- perform_chi_square(scale_column = scale, low_quality_column = low_quality_columns[i], low_quality_threshold = low_quality_threshold[i])
-    chi_square_results[[scale]][[low_quality_columns[i]]] <- result
-  }
-}
-
-
-library(ggplot2)
-
-# Create a data frame with the correct results
+# Create a data frame with the chi-square results
 chi_square_res <- data.frame(
   Scale = rep(c("BSS", "ESS", "PSQI", "AIS"), each = 2),
   Low_Quality_Measure = rep(c("SF36.PCS", "SF36.MCS"), times = 4),
@@ -383,7 +359,8 @@ chi_square_res <- data.frame(
   p_value = c(0.0008558, 0.2095, 0.0007884, 0.001143, 0.008897, 1.772e-05, 0.01198, 8.044e-07)
 )
 
-# Create a bar plot
+library(ggplot2)
+# Create a bar plot for the x^2 values
 x_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared, fill = Low_Quality_Measure)) +
   geom_bar(stat = "identity", position = "dodge") +
   labs(title = "Chi-squared Test Results",
