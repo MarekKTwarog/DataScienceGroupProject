@@ -277,14 +277,11 @@ ggplot(data = prevalence_df, aes(x = Scale, y = Prevalence.Percent, fill = Scale
 
 detach(liver_dfcleanIMP)
 
-# Conditional probability of low quality of life given that there is sleep disturbance as measured by that specific scale.
-# Interested to investigate the likelihood that an individual with sleep disturbance
+# We're interested to investigate the likelihood that an individual with sleep disturbance
 # ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
 # Event A: Low quality of life defined by a chosen threshold
 # Event B: Sleep disturbance based on specific scale
 # P(A|B) = = Number of individuals with both A and B / Number of individuals with B
-
-
 # Define the function to generate a contingency table
 generate_contingency_table <- function(scale_column, sleep_column, sf36_threshold) {
   sleep_disturbance <- liver_dfcleanIMPrmNA[[scale_column]] == 1
