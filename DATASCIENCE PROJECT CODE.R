@@ -33,10 +33,10 @@ glimpse(liver_df)
 ################################################################################
 
 liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
-                                        "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
-                                        "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
-                                        "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
-                                        "SF36.PCS", "SF36.MCS")]
+                             "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
+                             "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
+                             "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
+                             "SF36.PCS", "SF36.MCS")]
 
 ################################################################################
 ################################################################################
@@ -202,6 +202,7 @@ sd(liver_dfcleanPW_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
 #Remove NA values from complete case dataframe
 liver_dfcleanCC <- na.omit(liver_dfcleanCC)
 liver_noPSQI_rmNA <- na.omit(liver_noPSQI)
+liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 ################################################################################
 ################################################################################
 
@@ -224,6 +225,14 @@ for (col in categorical_var) {
 
 for (col in categorical_var) {
   liver_dfcleanPW_IMP[[col]] <- factor(liver_dfcleanPW_IMP[[col]])
+}
+
+for (col in categorical_var) {
+  liver_dfcleanPW_IMPrmNA[[col]] <- factor(liver_dfcleanPW_IMPrmNA[[col]])
+}
+
+for (col in categorical_var) {
+  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
 }
 
 for (col in categorical_var) {
@@ -265,7 +274,16 @@ liver_dfcleanPW_IMP <- liver_dfcleanPW_IMP %>%
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
          Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
 
+liver_dfcleanPW_IMPrmNA <- liver_dfcleanPW_IMPrmNA %>%
+  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
+         Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
+         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
+
 liver_noPSQI_rmNA <- liver_noPSQI_rmNA %>%
+  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
+         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
+
+liver_noPSQI <- liver_noPSQI %>%
   mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
          Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
 
@@ -288,8 +306,16 @@ for (col in categorical_var2) {
   liver_dfcleanPW_IMP[[col]] <- factor(liver_dfcleanPW_IMP[[col]])
 }
 
+for (col in categorical_var2) {
+  liver_dfcleanPW_IMPrmNA[[col]] <- factor(liver_dfcleanPW_IMPrmNA[[col]])
+}
+
 for (col in categorical_var3) {
   liver_noPSQI_rmNA[[col]] <- factor(liver_noPSQI_rmNA[[col]])
+}
+
+for (col in categorical_var3) {
+  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
 }
 
 #checking to see if conversion to factors was successful
@@ -298,13 +324,6 @@ glimpse(liver_dfcleanPW_IMP)#variables successfully converted to factors
 glimpse(liver_noPSQI_rmNA) #variables successfully converted to factors
 ################################################################################
 ################################################################################
-
-################################################################################
-####################REMOVING REMAINING NA's#####################################
-################################################################################
-
-#Remove NA values from liver_dfcleanPW_IMP dataframe
-liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 
 ################################################################################
 ################################################################################
@@ -319,4 +338,4 @@ liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 #---liver_dfcleanPW_IMPrmNA--- Dataframe with imputed values for PSQI and remaining NA's removed
 
 #---liver_noPSQI--- Dataframe excluding PSQI but still has NA values present for other variables
-#---liver_noPSQI_rmNA--- Dataframe with PSQI compleetely removed as a variable and remaining NA's removed
+#---liver_noPSQI_rmNA--- Dataframe with PSQI completely removed as a variable and remaining NA's removed
