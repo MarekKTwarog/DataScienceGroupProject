@@ -13,14 +13,17 @@
 library(tidyverse)
 #install.packages("funModeling")
 library(funModeling)
-install.packages("mice")
+#install.packages("mice")
 library(mice)
+#install.packages("corrplot")
+library(corrplot)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
 ################################################################################
 
 liver_df <- read.csv("project_data.csv")
+glimpse(liver_df)
 
 ################################################################################
 ################################################################################
@@ -44,26 +47,27 @@ liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
 
 #'Using glimpse() to display column names, analyze structure of data, identify
 #'missing values/zeros and to see what type each variable is coded as. Status()
-#'was used to check p_na values for each variable, values with p_na <0.2 indicate
-#'data for variable has less than 20% missing values. Status() also tells us how
+#'was used to check p_na values for each variable, values with p_na <0.3 indicate
+#'data for variable has less than 30% missing values. Status() also tells us how
 #'many unique values are present per variable, this can help easily identify
 #'which variables should be categorical.
 
 glimpse(liver_dfclean)
-status(liver_dfclean)# p_na values for PSQI variabee is 0.317164179 which is high, the NA values will need to be imputatd
+status(liver_dfclean)
 dim(liver_dfclean)
 
+#' p_na values for PSQI variable is 0.317164179 which is high and over the 0.3
+#' threshold meaning the variable will have to bee removed from analysis to prevent
+#' inaccurate results. Thus a new dataframe excluding PSQI will be made but also
+#' a complete case analysis will be performeed which includes PSQI as a variable,
+#' and another dataframe which involves imputation of PSQI values will be made.
+#' An analysis will be done on these 3 dataframes which will encompass a sensitivity test.
+
 ################################################################################
-########################## INSTALLING CORRPLOT PACKAGE #########################
+####################### CREATING DATAFRAME WITHOUT PSQI #######################
 ################################################################################
 
-#Installling corrplot package so I can generate a correlation plot so I can determine
-#' which variable has the highest correlation with PSQ1 so I can then create a linear
-#' regression model between the two variables as well as pairwise imputation to predict
-#' NA values for PSQ1
-
-#install.packages("corrplot")
-library(corrplot)
+liver_noPSQI <- liver_dfclean[, -which(names(liver_dfclean) == "Pittsburgh.Sleep.Quality.Index.Score")]
 
 ################################################################################
 ## SEARCHING FOR CORRELATION BETWEEN PSQI AND OTHER VARIABLE(S) USING CORRPLOT #
@@ -79,8 +83,8 @@ library(corrplot)
 #' then used to replace the NA values in the PSQ1 column, AIS is also used in
 #'pairwise imputation to predict the missing values for PSQI
 
-correlation <- cor(liver_dfclean, use = "pairwise")
-corrplot(correlation, type = "lower", diag = FALSE)
+correlation2 <- cor(liver_dfclean, use = "pairwise")
+corrplot(correlation2, type = "lower", diag = FALSE)
 
 ################################################################################
 ################################################################################
@@ -89,63 +93,59 @@ corrplot(correlation, type = "lower", diag = FALSE)
 ############## CHECKING TO SEE IF MISSING VALUES ARE MCAR ######################
 ################################################################################
 
-#************CHECK THIS SUMMARY OVER, SINCE IN SLIDES MCAR DOES NOT EQUAL REGRESSION?
-#' To determine whether we can conduct a linear regression model to impute missing NA
-#' values for the PSQI variable, we split the dataset into two data frames, one which
-#' contains only complete case values with respect to PSQI and another which only
+
+#' To determine whether we can conduct pairwise regression imputation and complete
+#' case analysis to impute missing NA's we split the dataset into two data frames, one which
+#' contains only complete case values with respect to PSQI value presence and another which only
 #' contains rows that are found as NA's for the PSQI variable. We then take the
-#' mean of the variables "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale", and
-#' "Epworth.Sleepiness.Scale" for each of the dataframes (with and without PSQI NA's)
+#' mean of each variabl for each of the dataframes (with and without PSQI NA's)
 #' The means are then used to conduct a t-statistic which tests to see whether
-#' there is a significant difference in means which will let us know whether we should
-#' consider our missing PSQI data as MCAR or MAR. If the means are found to be
-#' significantly different from each other then this tells us that the missing NA
-#' values are not MCAR and thus a linear regression model cannot be used to
-#' impute the missing NA values for PSQ1.
+#' there is a significant difference in the mean of each variable btween datasets
+#' which will let us know whether we should consider our missing PSQI data as MCAR or MAR.
+#'  If the means are found to be significantly different from each other then this
+#'  tells us that the missing NA values are not MCAR and thus a complete case and
+#'  pairwise imputation cannot be used to deal with thee missing values for PSQI.
+
+# List of variables for which you want to compare means
+variables_to_compare <- c("Gender", "Age", "BMI", "Time.from.transplant",
+                          "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
+                          "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
+                          "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
+                          "SF36.PCS", "SF36.MCS")
 
 # Create two data frames, one with NA values and one without NA values in Pittsburgh column
 na_rows <- is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)
 df_with_na <- liver_dfclean[na_rows, ]
 df_without_na <- liver_dfclean[!na_rows, ]
-# Calculate means for variables in df_with_na
-mean_with_na <- colMeans(df_with_na[c("Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale", "Epworth.Sleepiness.Scale")], na.rm = TRUE)
-mean_with_na
-# Calculate means for variables in df_without_na
-mean_without_na <- colMeans(df_without_na[c("Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale", "Epworth.Sleepiness.Scale")], na.rm = TRUE)
-mean_without_na
-# Perform t-test
-t_test_result <- t.test(mean_with_na, mean_without_na)
-# Print the t-test result
-print(t_test_result)
 
-#'we employed a Welch Two Sample t-test to investigate potential differences in
-#'the means of three sleep-related variables, namely "Athens.Insomnia.Scale,"
-#'"Berlin.Sleepiness.Scale," and "Epworth.Sleepiness.Scale," between two separate
-#'dataframes, "mean_with_na" and "mean_without_na." The t-test was performed to
-#'ascertain whether there is a statistically significant disparity in the means
-#'of these variables across the two dataframes. The t-test results indicated a
-#'small t-value of 0.12858, with degrees of freedom (df) calculated as 3.9558.
-#'The corresponding p-value was found to be 0.904, suggesting no significant
-#'difference in means. Additionally, the 95 percent confidence interval (-9.294151, 10.192629)
-#'included 0, further supporting the null hypothesis of no significant difference.
-#'Consequently, we conclude that there is no evidence to reject the null hypothesis,
-#'indicating that the means of the three sleep-related variables are not significantly
-#'different between the two dataframes. Therefore, because the means of variables
-#'are not significantly different from each other they can be considered MCAR and so
-#'it is safe to conduct a linear regression model to impute missing values for
-#'Pittsburgh.Sleep.Quality.Index.Score.
+# Initialize an empty list to store t-test results for each variable
+t_test_results_list <- list()
+
+# Loop through each variable and perform t-test
+for (variable in variables_to_compare) {
+  t_test_result <- t.test(df_with_na[[variable]], df_without_na[[variable]])
+  t_test_results_list[[variable]] <- t_test_result
+}
+
+# Print the t-test results for each variable
+for (variable in variables_to_compare) {
+  cat("Variable:", variable, "\n")
+  print(t_test_results_list[[variable]])
+  cat("\n")
+}
 
 ################################################################################
 #### CREATING DATAFRAMES FOR EACH METHOD OF DEALING WITH NA'S ##################
 ################################################################################
 
-#'Creating three datasets, liver_dfcleanCC will have only complete case values
-#'liver_dfcleanGLM_IMP will have imputed values for PSQI using linear regression
-#'for imputation, and liver_dfcleanPW_IMP which will use pariwise imputation to
-#'imput values for PSQI
+#'Creating two datasets, liver_dfcleanCC will have only complete case values
+#'and liver_dfcleanPW_IMP which will use pairwise imputation to
+#'impute values for PSQI. This will result in now 3 dataframes that can be used
+#'for analysis, one with PSQI completely excluded, one with PSQI included but
+#'using complete case approach, and the last with missing values for PSQI imputed
+#'using pairwise imputation
 
 liver_dfcleanCC <- liver_dfclean
-liver_dfcleanGLM_IMP <- liver_dfclean
 liver_dfcleanPW_IMP <- liver_dfclean
 
 ################################################################################
@@ -196,41 +196,12 @@ sd(liver_dfcleanPW_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
 ################################################################################
 
 ################################################################################
-################ IMPUTATION VIA LINEAR REGRESSION MODEL ########################
-################################################################################
-
-lm_model <- lm(Pittsburgh.Sleep.Quality.Index.Score ~ Athens.Insomnia.Scale, data = liver_dfclean, na.action = na.exclude)
-liver_dfcleanGLM_IMP$PredictedPSQ1 <- predict(lm_model, newdata = liver_dfclean)
-# Replace NA values in 'PSQ1' with their respective 'y_predicted' values
-liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score[is.na(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score)] <- liver_dfcleanGLM_IMP$PredictedPSQ1[is.na(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score)]
-
-################################################################################
-################################################################################
-
-################################################################################
-######### SUMMARY OF PSQI VALUES AFTER LINEEAR REGRESSION IMPUTATION ###########
-################################################################################
-
-summary(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score)
-# Summary of the PSQI column using the summary function
-summary(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score)
-# Mean of the PSQI column
-mean(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
-# Median of the PSQI column
-median(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
-# Standard deviation of the PSQI column
-sd(liver_dfcleanGLM_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
-
-################################################################################
-################################################################################
-
-################################################################################
-############## REMOVING NA VALUES FROM COMPLETE CASE DATAFRAME #################
+##REMOVING NA VALUES FROM COMPLETE CASE DATAFRAME AND DATAFRAME EXCLUDING PSQI##
 ################################################################################
 
 #Remove NA values from complete case dataframe
 liver_dfcleanCC <- na.omit(liver_dfcleanCC)
-
+liver_noPSQI_rmNA <- na.omit(liver_noPSQI)
 ################################################################################
 ################################################################################
 
@@ -252,24 +223,26 @@ for (col in categorical_var) {
 }
 
 for (col in categorical_var) {
-  liver_dfcleanGLM_IMP[[col]] <- factor(liver_dfcleanGLM_IMP[[col]])
-}
-
-for (col in categorical_var) {
   liver_dfcleanPW_IMP[[col]] <- factor(liver_dfcleanPW_IMP[[col]])
 }
 
+for (col in categorical_var) {
+  liver_noPSQI[[col]] <- factor(liver_noPSQI_rmNA[[col]])
+}
+
+for (col in categorical_var) {
+  liver_noPSQI_rmNA[[col]] <- factor(liver_noPSQI_rmNA[[col]])
+}
+
 #Checking to see if variables were correctly transformed
-glimpse(liver_dfcleanGLM_IMP) #Looks good
 glimpse(liver_dfcleanPW_IMP) #Looks good
 glimpse(liver_dfcleanCC) #Looks good
-
+glimpse(liver_noPSQI_rmNA) #Looks good
 #'Using the summary function to check for presence of any values that were not
 #'encoded as NA's but look to be out of place
-summary(liver_dfcleanGLM_IMP) #Looks good
 summary(liver_dfcleanPW_IMP) #Looks good
 summary(liver_dfcleanCC) #Looks good
-
+summary(liver_noPSQI_rmNA) #Looks good
 ################################################################################
 ################################################################################
 
@@ -286,11 +259,6 @@ summary(liver_dfcleanCC) #Looks good
 #'added to the dataframe as new columns using the mutate function from the tidyverse
 #'package.
 
-liver_dfcleanGLM_IMP <- liver_dfcleanGLM_IMP %>%
-  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
-         Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
-         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
-
 liver_dfcleanCC <- liver_dfcleanCC %>%
   mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
@@ -299,6 +267,14 @@ liver_dfcleanCC <- liver_dfcleanCC %>%
 liver_dfcleanPW_IMP <- liver_dfcleanPW_IMP %>%
   mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
+         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
+
+liver_noPSQI <- liver_noPSQI %>%
+  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
+         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
+
+liver_noPSQI_rmNA <- liver_noPSQI_rmNA %>%
+  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
          Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
 
 ################################################################################
@@ -310,10 +286,7 @@ liver_dfcleanPW_IMP <- liver_dfcleanPW_IMP %>%
 
 #Now we must convert the newly made binary variables to factors for further analysis
 categorical_var2 <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary")
-
-for (col in categorical_var2) {
-  liver_dfcleanGLM_IMP[[col]] <- factor(liver_dfcleanGLM_IMP[[col]])
-}
+categorical_var3 <- c("Epworth_binary", "Athens_binary")
 
 for (col in categorical_var2) {
   liver_dfcleanCC[[col]] <- factor(liver_dfcleanCC[[col]])
@@ -323,11 +296,19 @@ for (col in categorical_var2) {
   liver_dfcleanPW_IMP[[col]] <- factor(liver_dfcleanPW_IMP[[col]])
 }
 
+for (col in categorical_var3) {
+  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
+}
+
+for (col in categorical_var3) {
+  liver_noPSQI_rmNA[[col]] <- factor(liver_noPSQI_rmNA[[col]])
+}
+
 #checking to see if conversion to factors was successful
-glimpse(liver_dfcleanGLM_IMP)#variables successfully converted to factors
 glimpse(liver_dfcleanCC)#variables successfully converted to factors
 glimpse(liver_dfcleanPW_IMP)#variables successfully converted to factors
-
+glimpse(liver_noPSQI) #variables successfully converted to factors
+glimpse(liver_noPSQI_rmNA) #variables successfully converted to factors
 ################################################################################
 ################################################################################
 
@@ -336,30 +317,62 @@ glimpse(liver_dfcleanPW_IMP)#variables successfully converted to factors
 ################################################################################
 
 #Remove NA values from liver_dfcleanPW_IMP dataframe
-liver_dfcleanGLM_IMPrmNA <- na.omit(liver_dfcleanGLM_IMP)
-
-#Remove NA values from liver_dfcleanPW_IMP dataframe
 liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 
 ################################################################################
 ################################################################################
 
+################################################################################
+##################### FINAL LIST OF RELEVANT DATAFRAMES#########################
+################################################################################
+
+#---liver_dfcleanCC--- complete case dataframe which includes PSQI variable
+
+#---liver_dfcleanPW_IMP---Dataframe with imputed values for PSQI abut still has NA values present for other variables
+#---liver_dfcleanPW_IMPrmNA--- Dataframe with imputed values for PSQI and remaining NA's removed
+
+#---liver_noPSQI--- Dataframe excluding PSQI but still has NA values present for other variables
+#---liver_noPSQI_rmNA--- Dataframe with PSQI compleetely removed as a variable and remaining NA's removed
+
+
+
 #### Goal 2: Estimation of the prevalence of sleep disturbance
 
 # Attach dataframe with complete cases to avoid referencing it every time you use it
-attach(liver_dfcleanCC)
+attach(liver_noPSQI_rmNA)
 
 # Calculate the prevalence of sleep disturbance using the 4 measures using prop.table() function and view results in a table
-prevalence <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Pittsburgh_binary, Athens_binary))
+prevalence1 <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Athens_binary))
 
 # Extract the table
 write.csv(prevalence, "prevalence.csv")
 
-#' Trying to calculate the prevalence by taking into consideration the observations without missing values for each scale
-#' Each scale has different number of observations with missing values
-#' Detach liver_dfcleanIMPrmNA as we need to use the previous dataframe where NA's where not omitted yet (complete case).
-detach(liver_dfcleanCC)
-attach(liver_dfcleanPW_IMP)
+# We want to plot the results we got for when we have sleep disturbance based on one scale
+prevalence1 <- data.frame(
+  Scale = c("AIS", "BSS", "ESS"),
+  Prevalence.Percent = c(23.79, 9, 6.15)
+)
+
+library(ggplot2)
+# Create the bar plot with color instead of fill
+approach1 <- ggplot(data = prevalence1, aes(x = Scale, y = Prevalence.Percent, fill= Scale)) +
+  geom_bar(stat = "identity") +
+  theme_light() +                                                                   # theme_ light will select a white background for the graph
+  geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%")),                  #geom_text allows to put labels and text on the graph itself
+            vjust = -1, size = 4, color = "black") +                                # adjust the vertical positioning using vjust = and set the size using size =
+  scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +                 # set the y-scale from 0 to 100, with 100 being the highest prevalance and name the y-axis using name =
+  labs(title = "Prevalence of Sleep Disturbance Across Scales Using Complete Case", # give a title to the graph using title =
+        x = "Sleep Disturbance Scale") +                                            # if x = is not included, the x-axis name will be just "Scale".
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)) +                        # axis.text.x = will rotate the x-axis labels and hjust will alter it position
+          guides(fill = "none")                                                     # this removes the fill legend because its unnecessary
+
+
+#' The results of prevalence when doing it all together is not the most ideal way to do it because each scale has each scale has a different number of observations with missing values
+#' Thus, we will try to calculate the prevalence by taking into consideration the observations without missing values for each scale seperately
+#' Detach liver_noPSQI_rmNA as we need to use the previous dataframe where NA's where not omitted yet: liver_noPSQI.
+detach(liver_noPSQI_rmNA)
+
+attach(liver_noPSQI)
 
 # Check the number of observations with missing values for each scale
 missing_berlin <- sum(is.na(Berlin.Sleepiness.Scale))
@@ -378,12 +391,11 @@ prev_berlin <- prop.test(x = berlin_cases, n = berlin_pop, conf.level = 0.95)
 sleep_vars <- list(
   BSS = Berlin.Sleepiness.Scale,
   ESS = Epworth_binary,
-  PSQI = Pittsburgh_binary,
   AIS = Athens_binary
 )
 
 # Initialize an empty dataframe to store results
-prevalence_df <- data.frame()
+prevalence2 <- data.frame()
 
 # Loop through sleep disturbance variables
 for (scale_name in names(sleep_vars)) {
@@ -408,33 +420,31 @@ for (scale_name in names(sleep_vars)) {
     CI.Upper = prev_result$conf.int[2] * 100
   )
 
-  # Append the scale result to the dataframe
-  prevalence_df <- rbind(prevalence_df, result)
+  # Append the scale result to the dataframe and use rbind to join multiple rows created above.
+  prevalence2 <- rbind(prevalence2, result)
 }
 
-prevalence_df <- prevalence_df[sort.list(prevalence_df$Prevalence.Percent),]
-prevalence_df$rank <- 1:nrow(prevalence_df )
+prevalence2<- prevalence2[sort.list(prevalence2$Prevalence.Percent),]
+prevalence2$rank <- 1:nrow(prevalence2 )
 
-library(ggplot2)
-
-ggplot(data = prevalence_df, aes(x = Scale, y = Prevalence.Percent, fill = Scale)) +
-  theme_bw() +
-  geom_bar(stat = "identity", position = "dodge") +
-  geom_errorbar(aes(ymin = CI.Lower , ymax = CI.Upper), position = position_dodge(width = 0.9), width = 0.2) +
-  geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%")),
-            vjust = -3, size = 3, position = position_dodge(width = 0.9), color = "black") +
+approach2 <- ggplot(data = prevalence2, aes(x = Scale, y = Prevalence.Percent, fill = Scale)) +
+  geom_bar(stat = "identity") +
+  theme_light() +
+  geom_errorbar(aes(ymin = CI.Lower , ymax = CI.Upper), width = 0.2) +
+  geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%")),    # round the prevalence to 2 decimal places
+            vjust = -4, size = 4, color = "black") +
   scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
-  labs(title = "Prevalence of Sleep Disturbance Across Scales",
-       caption = "Confidence intervals indicate uncertainty.") +
+  labs(title = "Prevalence of Sleep Disturbance Across Scales Using Selective NA Omit",
+       x = "Sleep Disturbance Scale",
+       caption = "*Confidence intervals indicate uncertainty of the prevalence estimates.") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.caption = element_text(size = 9, color = "gray", hjust = 0)) +
   guides(fill = "none") # Remove the fill legend because its unnecessary
 
-detach(liver_dfcleanPW_IMP)
+detach(liver_noPSQI)
 
-
-table(liver_dfcleanPW_IMPrmNA$SF36.MCS <= 36)
-table(liver_dfcleanPW_IMPrmNA$Athens_binary)
+prev_plots <- grid.arrange(approach1, approach2, ncol = 2)
+ggsave("prev_plots.png", prev_plots, width = 14, height = 6, dpi = 300)
 
 # We're interested to investigate the likelihood that an individual with sleep disturbance
 # ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
@@ -443,8 +453,8 @@ table(liver_dfcleanPW_IMPrmNA$Athens_binary)
 # P(A|B) = = Number of individuals with both A and B / Number of individuals with B
 # Define the function to generate a contingency table
 generate_contingency_table <- function(scale_column, sleep_column, sf36_threshold) {
-  sleep_disturbance <- liver_dfcleanPW_IMPrmNA[[scale_column]] == 1
-  low_quality_sf36 <- liver_dfcleanPW_IMPrmNA[[sf36_column]] <= sf36_threshold
+  sleep_disturbance <- liver_noPSQI_rmNA[[scale_column]] == 1
+  low_quality_sf36 <- liver_noPSQI_rmNA[[sf36_column]] <= sf36_threshold
 
   contingency_table <- table(sleep_disturbance, low_quality_sf36)
   return(contingency_table)
@@ -455,7 +465,7 @@ sf36_pcs_threshold <- 33
 sf36_mcs_threshold <- 36
 
 # List of sleep disturbance scales and SF36 columns
-sleep_scale_columns <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
+sleep_scale_columns <- c("Epworth_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
 sf36_columns <- c("SF36.PCS", "SF36.MCS")
 
 
@@ -473,52 +483,61 @@ for (scale_column in sleep_scale_columns) {
 
     contingency_table <- generate_contingency_table(scale_column, sf36_column, sf36_threshold)
 
-  # Create the file name for the contingency table
-  file_name <- paste(scale_column,  sf36_column,"contingency_table.csv", sep = "_")
+    # Create the file name for the contingency table
+    file_name <- paste(scale_column,  sf36_column,"contingency_table.csv", sep = "_")
 
-  # Save the contingency table as a CSV file
-  write.csv(contingency_table, file_name)
+    # Save the contingency table as a CSV file
+    write.csv(contingency_table, file_name)
 
-  # Perform chi-square test
-  chi_square_result <- chisq.test(contingency_table)
-  chi_square_results[[scale_column]][[sf36_column]] <- chi_square_result
+    # Perform chi-square test
+    chi_square_result <- chisq.test(contingency_table)
+    chi_square_results[[scale_column]][[sf36_column]] <- chi_square_result
   }
 }
 
+# Double check that the answers above are correct by checking number of participants with low quality of life and those with sleep disturbance seperately
+table(liver_noPSQI_rmNA$SF36.MCS <= 36)
+table(liver_noPSQI_rmNA$Athens_binary)
+
 # Create a data frame with the chi-square results
 chi_square_res <- data.frame(
-  Scale = rep(c("BSS", "ESS", "PSQI", "AIS"), each = 2),
-  Low_Quality_Measure = rep(c("SF36.PCS", "SF36.MCS"), times = 4),
-  X_squared = c(11.116, 1.5749, 11.268, 10.58, 6.8435, 18.42, 6.3135, 24.347),
-  p_value = c(0.0008558, 0.2095, 0.0007884, 0.001143, 0.008897, 1.772e-05, 0.01198, 8.044e-07)
+  Scale = rep(c("BSS", "ESS", "AIS"), each = 2),
+  Low_Quality_Measure = rep(c("SF36.PCS", "SF36.MCS"), times = 3),
+  X_squared = c(11.116, 1.5749, 11.268, 10.58, 6.3135, 24.347),
+  p_value = c(0.0008558, 0.2095, 0.0007884, 0.001143, 0.01198, 8.044e-07)
 )
 
 library(ggplot2)
 # Create a bar plot for the x^2 values
 x_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared, fill = Low_Quality_Measure)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Chi-squared Test Results",
+  geom_bar(stat = "identity", position = "dodge") + # dodge is selected to have the MCS and PCS for each scale beside each other
+  labs(title = " X^2 from Chi-squared Test Results",
        x = "Sleep Disturbance Scale",
        y = "X-squared Value",
        fill = "Low Quality of Life Measure") +
-  theme_minimal()
+  theme_light()+
+  guides(fill = "none") # Remove the fill legend because I will add it in the p-value plot
 x_plot
+
 # Create a dot plot for p-values
-p_value_plot <- ggplot(chi_square_res, aes(x = p_value, y = Scale, color = Low_Quality_Measure)) +
+p_value_plot <- ggplot(chi_square_res, aes(x = Scale, y = p_value, color = Low_Quality_Measure)) +
   geom_point(size = 3) +
-  labs(title = "Chi-squared Test Results",
+  labs(title = "P-values from Chi-squared Test Results",
        x = "P-value",
-       y = "Sleep Disturbance Scale") +
-  theme_minimal()
+       y = "Sleep Disturbance Scale",
+       fill = "Low Quality of Life Measure") +
+  theme_light()
+
 
 p_value_plot
+
 # Display the plots side by side
-library(gridExtra)
-grid.arrange(x_plot, p_value_plot, ncol = 2)
+chi_p_value <- grid.arrange(x_plot, p_value_plot, ncol = 2)
+
+ggsave("chi_sqaure_combined.png", chi_p_value, width = 14, height = 6, dpi = 300)
 
 library(ggplot2)
-
-# Create a forest plot-like visualization
+# Experimenting and creating a forest plot-like visualization
 forest_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared)) +
   geom_point(aes(color = Low_Quality_Measure), size = 3) +
   geom_text(aes(label = sprintf("p = %.4f", p_value)), nudge_y = 0.2, size = 3, hjust = -0.1) +
@@ -526,8 +545,10 @@ forest_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared)) +
        x = "Sleep Disturbance Scale",
        y = "X-squared Value",
        color = "Low Quality of Life Measure") +
-  theme_minimal()
+  theme_light()
 forest_plot
-#####################################################################################
 
+ggsave("forestplot_experimenting.png", forest_plot, width = 8, height = 6, dpi = 300)
+
+#####################################################################################
 
