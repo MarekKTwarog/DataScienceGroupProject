@@ -252,6 +252,10 @@ for (col in categorical_var) {
 }
 
 for (col in categorical_var) {
+  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
+}
+
+for (col in categorical_var) {
   liver_dfcleanPW_IMP[[col]] <- factor(liver_dfcleanPW_IMP[[col]])
 }
 
@@ -292,6 +296,10 @@ liver_dfcleanCC <- liver_dfcleanCC %>%
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
          Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
 
+liver_noPSQI <- liver_noPSQI %>%
+  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
+         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
+
 liver_dfcleanPW_IMP <- liver_dfcleanPW_IMP %>%
   mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
@@ -313,6 +321,10 @@ for (col in categorical_var2) {
 
 for (col in categorical_var2) {
   liver_dfcleanCC[[col]] <- factor(liver_dfcleanCC[[col]])
+}
+
+for (col in categorical_var3) {
+  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
 }
 
 for (col in categorical_var2) {
