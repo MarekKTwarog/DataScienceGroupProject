@@ -309,10 +309,10 @@ liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 ################################################################################
 
 ################################################################################
-##################### FINAL LIST OF RELEVANT DATAFRAMES#########################
+##################### FINAL LIST OF RELEVANT DATAFRAMES ########################
 ################################################################################
 
-#---liver_dfcleanCC--- omplete case dataframe which includes PSQI variable
+#---liver_dfcleanCC--- Complete case dataframe which includes PSQI variable
 
 #---liver_dfcleanPW_IMP---Dataframe with imputed values for PSQI abut still has NA values present for other variables
 #---liver_dfcleanPW_IMPrmNA--- Dataframe with imputed values for PSQI and remaining NA's removed
