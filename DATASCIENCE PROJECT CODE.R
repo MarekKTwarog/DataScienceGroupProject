@@ -23,7 +23,14 @@ library(corrplot)
 ################################################################################
 
 liver_df <- read.csv("project_data.csv")
+glimpse(liver_df) #Notice decent amoung of NA values for BMI, this can be easily imputed using weight to prevent loss of rows when using na.omit, this is safe since our main analysis is on the sleep disturbance measure variables
 
+################################################################################
+################################################################################
+
+################################################################################
+####################### IMPUTING BMI ###########################################
+################################################################################
 
 liver_df_weight4IMP <- liver_df[,c("Gender", "weight", "Age", "BMI", "Time.from.transplant",
                              "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
@@ -37,20 +44,15 @@ correlation1 <- cor(liver_df_weight4IMP, use = "pairwise")
 corrplot(correlation1, type = "lower", diag = FALSE)
 
 
-# Identify rows with missing BMI and complete cases with both BMI and Weight
+# Identifying rows with missing BMI and complete cases with both BMI and weight
 missing_bmi <- liver_df_weight4IMP$BMI %in% NA
 complete_cases <- !missing_bmi & !is.na(liver_df_weight4IMP$weight)
-
-# Create a linear regression model for imputing BMI based on Weight
+# Creating a linear regression model for imputing BMI based on Weight
 lm_model <- lm(BMI ~ weight, data = liver_df_weight4IMP[complete_cases,])
-
-# Predict missing BMI values using the linear regression model
+# Predicting missing BMI values using the linear regression model
 predicted_bmi <- predict(lm_model, newdata = liver_df_weight4IMP[missing_bmi,])
-
-# Replace the missing BMI values with the predicted values
+# Replacing the missing BMI values with the predicted values
 liver_df_weight4IMP$BMI[missing_bmi] <- predicted_bmi
-
-
 
 ################################################################################
 ################################################################################
