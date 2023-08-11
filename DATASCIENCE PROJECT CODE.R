@@ -24,6 +24,34 @@ library(corrplot)
 
 liver_df <- read.csv("project_data.csv")
 
+
+liver_df_weight4IMP <- liver_df[,c("Gender", "weight", "Age", "BMI", "Time.from.transplant",
+                             "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
+                             "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
+                             "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
+                             "SF36.PCS", "SF36.MCS")]
+liver_df_weight4IMP <- liver_df_weight4IMP %>%
+  mutate_all(as.numeric)
+
+correlation1 <- cor(liver_df_weight4IMP, use = "pairwise")
+corrplot(correlation1, type = "lower", diag = FALSE)
+
+
+# Identify rows with missing BMI and complete cases with both BMI and Weight
+missing_bmi <- liver_df_weight4IMP$BMI %in% NA
+complete_cases <- !missing_bmi & !is.na(liver_df_weight4IMP$weight)
+
+# Create a linear regression model for imputing BMI based on Weight
+lm_model <- lm(BMI ~ weight, data = liver_df_weight4IMP[complete_cases,])
+
+# Predict missing BMI values using the linear regression model
+predicted_bmi <- predict(lm_model, newdata = liver_df_weight4IMP[missing_bmi,])
+
+# Replace the missing BMI values with the predicted values
+liver_df_weight4IMP$BMI[missing_bmi] <- predicted_bmi
+
+
+
 ################################################################################
 ################################################################################
 
@@ -31,7 +59,7 @@ liver_df <- read.csv("project_data.csv")
 ###### CREATING DATAFRAM WITH VARIABLES TO BE USED FOR ANALYSIS ################
 ################################################################################
 
-liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
+liver_dfclean <- liver_df_weight4IMP[,c("Gender", "Age", "BMI", "Time.from.transplant",
                              "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
                              "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Epworth.Sleepiness.Scale",
                              "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale", "Berlin.Sleepiness.Scale",
@@ -82,8 +110,8 @@ liver_noPSQI <- liver_dfclean[, -which(names(liver_dfclean) == "Pittsburgh.Sleep
 #' then used to replace the NA values in the PSQ1 column, AIS is also used in
 #'pairwise imputation to predict the missing values for PSQI
 
-correlation <- cor(liver_dfclean, use = "pairwise")
-corrplot(correlation, type = "lower", diag = FALSE)
+correlation2 <- cor(liver_dfclean, use = "pairwise")
+corrplot(correlation2, type = "lower", diag = FALSE)
 
 ################################################################################
 ################################################################################
@@ -309,14 +337,13 @@ liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 ################################################################################
 
 ################################################################################
-##################### FINAL LIST OF RELEVANT DATAFRAMES ########################
+##################### FINAL LIST OF RELEVANT DATAFRAMES#########################
 ################################################################################
 
-#---liver_dfcleanCC--- Complete case dataframe which includes PSQI variable
+#---liver_dfcleanCC--- omplete case dataframe which includes PSQI variable
 
 #---liver_dfcleanPW_IMP---Dataframe with imputed values for PSQI abut still has NA values present for other variables
 #---liver_dfcleanPW_IMPrmNA--- Dataframe with imputed values for PSQI and remaining NA's removed
 
 #---liver_noPSQI--- Dataframe excluding PSQI but still has NA values present for other variables
 #---liver_noPSQI_rmNA--- Dataframe with PSQI compleetely removed as a variable and remaining NA's removed
-
