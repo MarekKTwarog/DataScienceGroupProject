@@ -17,6 +17,8 @@ install.packages("mice")
 library(mice)
 install.packages("corrplot")
 library(corrplot)
+install.packages("MASS")
+library(MASS)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
@@ -224,17 +226,6 @@ for (col in categorical_var) {
 }
 
 for (col in categorical_var) {
-<<<<<<< HEAD
-  liver_dfcleanGLM_IMP[[col]] <- factor(liver_dfcleanGLM_IMP[[col]])
-}
-
-for (col in categorical_var) {
-  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
-}
-
-for (col in categorical_var) {
-=======
->>>>>>> 8a3a679b7848b0b7cf99303dc718c01dd111ba13
   liver_dfcleanPW_IMP[[col]] <- factor(liver_dfcleanPW_IMP[[col]])
 }
 
@@ -280,10 +271,6 @@ liver_dfcleanCC <- liver_dfcleanCC %>%
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
          Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
 
-liver_noPSQI <- liver_noPSQI %>%
-  mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
-         Athens_binary = ifelse(Athens.Insomnia.Scale > 5, 1, 0))
-
 liver_dfcleanPW_IMP <- liver_dfcleanPW_IMP %>%
   mutate(Epworth_binary = ifelse(Epworth.Sleepiness.Scale > 10, 1, 0),
          Pittsburgh_binary = ifelse(Pittsburgh.Sleep.Quality.Index.Score > 4, 1, 0),
@@ -315,10 +302,6 @@ categorical_var3 <- c("Epworth_binary", "Athens_binary")
 
 for (col in categorical_var2) {
   liver_dfcleanCC[[col]] <- factor(liver_dfcleanCC[[col]])
-}
-
-for (col in categorical_var3) {
-  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
 }
 
 for (col in categorical_var2) {
@@ -357,4 +340,4 @@ glimpse(liver_noPSQI_rmNA) #variables successfully converted to factors
 #---liver_dfcleanPW_IMPrmNA--- Dataframe with imputed values for PSQI and remaining NA's removed
 
 #---liver_noPSQI--- Dataframe excluding PSQI but still has NA values present for other variables
-#---liver_noPSQI_rmNA--- Dataframe with PSQI completely removed as a variable and remaining NA's removed
+#---liver_noPSQI_rmNA--- Dataframe with PSQI compleetely removed as a variable and remaining NA's removed
