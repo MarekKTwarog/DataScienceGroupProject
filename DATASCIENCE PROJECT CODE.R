@@ -227,7 +227,7 @@ for (col in categorical_var) {
 }
 
 for (col in categorical_var) {
-  liver_noPSQI[[col]] <- factor(liver_noPSQI_rmNA[[col]])
+  liver_noPSQI[[col]] <- factor(liver_noPSQI[[col]])
 }
 
 for (col in categorical_var) {
