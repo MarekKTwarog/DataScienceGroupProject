@@ -329,9 +329,9 @@ liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 # to investigate whether there is a linear relationship between each measure and outcome (PCS and MCS)
 # We begin with the continuous measures
 # List of continuous predictors
-continuous_predictors <- c("Epworth.Sleepiness.Scale", "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")
+continuous_predictors <- c("Epworth.Sleepiness.Scale", "Athens.Insomnia.Scale")
 # List of binary predictors
-binary_predictors <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
+binary_predictors <- c("Epworth_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
 # List of response variables
 responses <- c("SF36.PCS", "SF36.MCS")
 #For liver_noPSQI_rmNA
@@ -342,8 +342,8 @@ for (predictor in c(continuous_predictors, binary_predictors)) {
     print(paste("Model: ", response, " ~ ", predictor))
     print(summary(model))
     plot(fitted(model), resid(model), 
-         main = paste("Homoscedasticity for Model:", response, "~", predictor),
-         sub = "Dataset: Complete Case")    
+         main = paste("Residual Plot for Model:", response, "~", predictor),
+         sub = "Dataset: PSQI Removed")    
     # Only run cor.test if both predictor and response are numeric
     if (is.numeric(liver_noPSQI_rmNA[[response]]) & is.numeric(liver_noPSQI_rmNA[[predictor]])) {
       print(cor.test(liver_noPSQI_rmNA[[response]], liver_noPSQI_rmNA[[predictor]]))
@@ -351,6 +351,9 @@ for (predictor in c(continuous_predictors, binary_predictors)) {
   }
 }
 #For liver_dfcleanPW_IMPrmNA
+#Need to now establish PSQI as a variable
+continuous_predictors <- c("Epworth.Sleepiness.Scale", "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")
+binary_predictors <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
 
 for (predictor in c(continuous_predictors, binary_predictors)) {
   for (response in responses) {
@@ -359,7 +362,7 @@ for (predictor in c(continuous_predictors, binary_predictors)) {
     print(paste("Model: ", response, " ~ ", predictor))
     print(summary(model))
     plot(fitted(model), resid(model), 
-         main = paste("Homoscedasticity for Model:", response, "~", predictor),
+         main = paste("Residual Plot for Model:", response, "~", predictor),
          sub = "Dataset: Pairwise Imputation")
     
     # Only run cor.test if both predictor and response are numeric
@@ -376,7 +379,7 @@ for (predictor in c(continuous_predictors, binary_predictors)) {
     print(paste("Model: ", response, " ~ ", predictor))
     print(summary(model))
     plot(fitted(model), resid(model), 
-    main = paste("Homoscedasticity for Model:", response, "~", predictor),
+    main = paste("Residual Plot for Model:", response, "~", predictor),
     sub = "Dataset: Complete Case")    
     # Only run cor.test if both predictor and response are numeric
     if (is.numeric(liver_dfcleanCC[[response]]) & is.numeric(liver_dfcleanCC[[predictor]])) {
@@ -438,6 +441,26 @@ anova(noPSQI.MCS.mix.step.forw, noPSQI.MCS.mix.mod.full)
 # Checking AICs to further investigate
 AIC(noPSQI.MCS.mix.mod.full)
 AIC(noPSQI.MCS.mix.step.forw)
+
+# Plotting residuals for the PCS stepwise model
+plot(fitted(noPSQI.PCS.mix.step.forw), residuals(noPSQI.PCS.mix.step.forw),
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values for Model SF36.PCS ~ AIS + ESS + BSS")
+abline(h = 0, col = "red")  # Adds a horizontal line at y = 0
+
+# Plotting residuals for the MCS stepwise model
+plot(fitted(noPSQI.MCS.mix.step.forw), residuals(noPSQI.MCS.mix.step.forw),
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values for Model SF36.MCS ~ AIS + ESS")
+abline(h = 0, col = "red")  # Adds a horizontal line at y = 0
+
+# Q-Q plot for the PCS stepwise model residuals
+qqnorm(residuals(noPSQI.PCS.mix.step.forw))
+qqline(residuals(noPSQI.PCS.mix.step.forw))
+
+# Q-Q plot for the MCS stepwise model residuals
+qqnorm(residuals(noPSQI.MCS.mix.step.forw))
+qqline(residuals(noPSQI.MCS.mix.step.forw))
 
 
 ################################################################################
