@@ -543,7 +543,7 @@ vif(CC.PCS.mix.mod.full)
 # Comparing to full variable inclusion
 anova(CC.PCS.mix.step.forw, CC.PCS.mix.mod.full)
 
-# We see there is not a statistically significant value for inclusion of PSQI
+# We see there is not a statistically significant value for inclusion of PSQI and BSS
 
 # Checking AICs to further investigate
 AIC(CC.PCS.mix.mod.full)
@@ -567,7 +567,7 @@ vif(CC.MCS.mix.step.forw)
 # Comparing to full variable inclusion
 anova(CC.MCS.mix.step.forw, CC.MCS.mix.mod.full)
 
-# We see there is not a statistically significant value for inclusion of PSQI
+# We see there is not a statistically significant value for inclusion of BSS and ESS
 
 # Checking AICs to further investigate
 AIC(CC.MCS.mix.mod.full)
