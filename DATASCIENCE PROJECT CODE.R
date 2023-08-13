@@ -152,19 +152,6 @@ liver_dfcleanPMM_IMP <- liver_dfclean
 ################################################################################
 
 ################################################################################
-#### PERFORMING SHAPIRO-WILK TEST ON PSQI TO CHECK IF NORMAL DISTRIBUTION ######
-################################################################################
-
-#Before we can conduct predictive mean matching imputation it is crucial to make sure that PSQI
-#does not follow a normal distribution
-
-psqi_scores <- liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score
-shapiro.test(psqi_scores) #p-value of 4.004e-08 means data does not follow normal distribution
-
-################################################################################
-################################################################################
-
-################################################################################
 ##################### PREDICTIVE MEAN MATCHING IMPUTATION ######################
 ################################################################################
 
