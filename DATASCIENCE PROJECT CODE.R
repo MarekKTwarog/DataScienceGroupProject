@@ -157,8 +157,8 @@ liver_dfcleanPMM_IMP <- liver_dfclean
 
 # Selecting relevant columns for imputation
 imputation_col <- liver_dfclean[c("Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")]
-# Performing PMM imputation
-PSQIimputations <- mice(imputation_col, method = "pmm", m = 1, maxit = 1, print = FALSE)
+# Performing PMM imputation with 
+PSQIimputations <- mice(imputation_col, method = "pmm", m = 31, maxit = 10, print = FALSE)
 PSQI_imputed_values <- complete(PSQIimputations)
 liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score <- PSQI_imputed_values$Pittsburgh.Sleep.Quality.Index.Score
 
