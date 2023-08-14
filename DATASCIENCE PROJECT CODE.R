@@ -336,8 +336,9 @@ liver_dfcleanPW_IMPrmNA <- na.omit(liver_dfcleanPW_IMP)
 
 
 
-#### Goal 2: Estimation of the prevalence of sleep disturbance
+############### Goal 2: Estimation of the prevalence of sleep disturbance ########################
 
+#### Approach 1
 # Attach dataframe with complete cases to avoid referencing it every time you use it
 attach(liver_noPSQI_rmNA)
 
@@ -347,7 +348,7 @@ prevalence1 <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Athens_
 # Extract the table
 write.csv(prevalence, "prevalence.csv")
 
-# We want to plot the results we got for when we have sleep disturbance based on one scale
+# We want to plot the results we got for when we have sleep disturbance based on one scale and complete case dataset
 prevalence1 <- data.frame(
   Scale = c("AIS", "BSS", "ESS"),
   Prevalence.Percent = c(23.79, 9, 6.15)
@@ -362,14 +363,16 @@ approach1 <- ggplot(data = prevalence1, aes(x = Scale, y = Prevalence.Percent, f
             vjust = -1, size = 4, color = "black") +                                # adjust the vertical positioning using vjust = and set the size using size =
   scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +                 # set the y-scale from 0 to 100, with 100 being the highest prevalance and name the y-axis using name =
   labs(title = "Prevalence of Sleep Disturbance Across Scales Using Complete Case", # give a title to the graph using title =
-        x = "Sleep Disturbance Scale") +                                            # if x = is not included, the x-axis name will be just "Scale".
+       x = "Sleep Disturbance Scale") +                                            # if x = is not included, the x-axis name will be just "Scale".
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +                        # axis.text.x = will rotate the x-axis labels and hjust will alter it position
-          guides(fill = "none")                                                     # this removes the fill legend because its unnecessary
+  guides(fill = "none")                                                     # this removes the fill legend because its unnecessary
 
+
+#### Approach 2
 
 #' The results of prevalence when doing it all together is not the most ideal way to do it because each scale has each scale has a different number of observations with missing values
 #' Thus, we will try to calculate the prevalence by taking into consideration the observations without missing values for each scale seperately
-#' Detach liver_noPSQI_rmNA as we need to use the previous dataframe where NA's where not omitted yet: liver_noPSQI.
+#' Detach liver_noPSQI_rmNA as we need to use the previous dataframe where NA's where not omitted yet (available case analysis): liver_noPSQI.
 detach(liver_noPSQI_rmNA)
 
 attach(liver_noPSQI)
@@ -434,7 +437,7 @@ approach2 <- ggplot(data = prevalence2, aes(x = Scale, y = Prevalence.Percent, f
   geom_text(aes(label = paste(round(Prevalence.Percent, 2), "%")),    # round the prevalence to 2 decimal places
             vjust = -4, size = 4, color = "black") +
   scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
-  labs(title = "Prevalence of Sleep Disturbance Across Scales Using Selective NA Omit",
+  labs(title = "Prevalence of Sleep Disturbance Across Scales Using Available Case",
        x = "Sleep Disturbance Scale",
        caption = "*Confidence intervals indicate uncertainty of the prevalence estimates.") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
@@ -446,12 +449,14 @@ detach(liver_noPSQI)
 prev_plots <- grid.arrange(approach1, approach2, ncol = 2)
 ggsave("prev_plots.png", prev_plots, width = 14, height = 6, dpi = 300)
 
-# We're interested to investigate the likelihood that an individual with sleep disturbance
-# ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
-# Event A: Low quality of life defined by a chosen threshold
-# Event B: Sleep disturbance based on specific scale
-# P(A|B) = = Number of individuals with both A and B / Number of individuals with B
-# Define the function to generate a contingency table
+
+############Experimenting: Supplementary################
+#' We're interested to investigate the likelihood that an individual with sleep disturbance
+#' ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
+#' Event A: Low quality of life defined by a chosen threshold
+#' Event B: Sleep disturbance based on specific scale
+#' P(A|B) = = Number of individuals with both A and B / Number of individuals with B
+#' Define the function to generate a contingency table
 generate_contingency_table <- function(scale_column, sleep_column, sf36_threshold) {
   sleep_disturbance <- liver_noPSQI_rmNA[[scale_column]] == 1
   low_quality_sf36 <- liver_noPSQI_rmNA[[sf36_column]] <= sf36_threshold
@@ -496,7 +501,7 @@ for (scale_column in sleep_scale_columns) {
 }
 
 # Double check that the answers above are correct by checking number of participants with low quality of life and those with sleep disturbance seperately
-table(liver_noPSQI_rmNA$SF36.MCS <= 36)
+table(liver_noPSQI_rmNA$SF36.MCS)
 table(liver_noPSQI_rmNA$Athens_binary)
 
 # Create a data frame with the chi-square results
@@ -523,9 +528,9 @@ x_plot
 p_value_plot <- ggplot(chi_square_res, aes(x = Scale, y = p_value, color = Low_Quality_Measure)) +
   geom_point(size = 3) +
   labs(title = "P-values from Chi-squared Test Results",
-       x = "P-value",
-       y = "Sleep Disturbance Scale",
-       fill = "Low Quality of Life Measure") +
+       x = "Sleep Disturbance Scale",
+       y = "P-value",
+       color = "Low Quality of Life Measure") +
   theme_light()
 
 
@@ -551,4 +556,3 @@ forest_plot
 ggsave("forestplot_experimenting.png", forest_plot, width = 8, height = 6, dpi = 300)
 
 #####################################################################################
-
