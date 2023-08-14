@@ -31,7 +31,7 @@ glimpse(liver_df)
 ################################################################################
 
 ################################################################################
-###### CREATING DATAFRAM WITH VARIABLES TO BE USED FOR ANALYSIS ################
+###### CREATING DATAFRAME WITH VARIABLES TO BE USED FOR ANALYSIS ###############
 ################################################################################
 
 liver_dfclean <- liver_df[,c("Gender", "Age", "BMI", "Time.from.transplant",
@@ -59,14 +59,14 @@ status(liver_dfclean)
 dim(liver_dfclean)
 
 #' p_na values for PSQI variable is 0.317164179 which is high and over the 0.3
-#' threshold meaning the variable will have to bee removed from analysis to prevent
-#' inaccurate results. Thus a new dataframe excluding PSQI will be made but also
-#' a complete case analysis will be performeed which includes PSQI as a variable,
-#' and another dataframe which involves imputation of PSQI values will be made.
-#' An analysis will be done on these 3 dataframes which will encompass a sensitivity test.
+#' threshold meaning the variable will have to be removed from analysis to prevent
+#' inaccurate results. Thus a new data frame excluding PSQI will be made but also
+#' a complete case analysis will be performed which includes PSQI as a variable,
+#' and another data frame which involves imputation of PSQI values will be made.
+#' An analysis will be done on these 3 data frames which will encompass a sensitivity test.
 
 ################################################################################
-####################### CREATING DATAFRAME WITHOUT PSQI #######################
+####################### CREATING DATA FRAME WITHOUT PSQI #######################
 ################################################################################
 
 liver_noPSQI <- liver_dfclean[, -which(names(liver_dfclean) == "Pittsburgh.Sleep.Quality.Index.Score")]
@@ -76,15 +76,15 @@ liver_noPSQI <- liver_dfclean[, -which(names(liver_dfclean) == "Pittsburgh.Sleep
 ################################################################################
 
 #' Here we use the cor() function to find the correlation between each variable
-#' then we use the corrplot function to crease a plot that will help easily visualize
+#' then we use the corrplot function to create a plot that will help easily visualize
 #' which variable has the strongest correlation with PSQ1. Based on the results,
 #' we find that the Athens.Insomnia.Scale has the strongest correlation with
-#' PSQ1 and thus we use predictive mean matching with AIS as thee predictor
-#' to predict values for NA in the PSQ1 variable column. The values predicted are
-#' then used to replace the NA values in the PSQ1 column.
+#' PSQ1 and thus we use multiple imputation via predictive mean matching method 
+#' with AIS as the predictor to predict values for NA in the PSQ1 variable column. 
+#'The values predicted are then used to replace the NA values in the PSQ1 column.
 
 correlation2 <- cor(liver_dfclean, use = "pairwise")
-corrplot(correlation2, type = "lower", diag = FALSE)
+corrplot(correlation2, type = "lower", diag = FALSE) #diag removes have the corr plot leaving only a diagonal half of the plot making it easier to read
 
 ################################################################################
 ################################################################################
@@ -94,11 +94,11 @@ corrplot(correlation2, type = "lower", diag = FALSE)
 ################################################################################
 
 
-#' To determine whether we can conduct complete 
-#' case analysis we must check to see if data is MCAR. We split the dataset into two data frames, one which
-#' contains only complete case values with respect to PSQI value presence and another which only
+#' To determine whether we can conduct complete case analysis we must check to see 
+#' if data is MCAR. We split the dataset into two data frames, one which contains 
+#' only complete case values with respect to PSQI value presence and another which only
 #' contains rows that are found as NA's for the PSQI variable. We then take the
-#' mean of each variabl for each of the dataframes (with and without PSQI NA's)
+#' mean of each variable for each of the data frames (with and without PSQI NA's)
 #' The means are then used to conduct a t-statistic which tests to see whether
 #' there is a significant difference in the mean of each variable btween datasets 
 #' which will let us know whether we should consider our missing PSQI data as MCAR or MAR.
@@ -118,16 +118,16 @@ na_rows <- is.na(liver_dfclean$Pittsburgh.Sleep.Quality.Index.Score)
 df_with_na <- liver_dfclean[na_rows, ]
 df_without_na <- liver_dfclean[!na_rows, ]
 
-# Initialize an empty list to store t-test results for each variable
+# Creating a list that will store t-test results for each variable
 t_test_results_list <- list()
 
-# Loop through each variable and perform t-test
+# Using a for loop to iterate through each variable and perform t-test
 for (variable in variables_to_compare) {
   t_test_result <- t.test(df_with_na[[variable]], df_without_na[[variable]])
   t_test_results_list[[variable]] <- t_test_result
 }
 
-# Print the t-test results for each variable
+# Printing the t-test results for each variable
 for (variable in variables_to_compare) {
   cat("Variable:", variable, "\n")
   print(t_test_results_list[[variable]])
@@ -139,11 +139,10 @@ for (variable in variables_to_compare) {
 ################################################################################
 
 #'Creating two datasets, liver_dfcleanCC will have only complete case values
-#'and liver_dfcleanPMM_IMP which will use PMM imputation to
-#'impute values for PSQI. This will result in now 3 dataframes that can be used 
-#'for analysis, one with PSQI completely excluded, one with PSQI included but
-#'using complete case approach, and the last with missing values for PSQI imputed
-#'using PMM imputation
+#'and liver_dfcleanPMM_IMP which will contain imputed values for PSQI. 
+#' This will result in now 3 data frames that can be used for analysis, one with PSQI 
+#' completely excluded, one with PSQI included but using complete case approach, 
+#' and the last with missing values for PSQI imputed using multiple imputation.
 
 liver_dfcleanCC <- liver_dfclean
 liver_dfcleanPMM_IMP <- liver_dfclean
@@ -152,7 +151,7 @@ liver_dfcleanPMM_IMP <- liver_dfclean
 ################################################################################
 
 ################################################################################
-##################### PREDICTIVE MEAN MATCHING IMPUTATION ######################
+###########MULTIPLE IMPUTATION VIA PREDICTIVE MEAN MATCHING METHOD #############
 ################################################################################
 
 # Selecting relevant columns for imputation
@@ -162,28 +161,17 @@ PSQIimputations <- mice(imputation_col, method = "pmm", m = 31, maxit = 10, prin
 PSQI_imputed_values <- complete(PSQIimputations)
 liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score <- PSQI_imputed_values$Pittsburgh.Sleep.Quality.Index.Score
 
-################################################################################
-################################################################################
-
-################################################################################
-######### SUMMARY OF IMPUTED VALUES AFTER  IMPUTATION ##########################
-################################################################################
-
-summary(liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score)
-# Summary of the PSQI column using the summary function
-summary(liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score)
-# Mean of the PSQI column
-mean(liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
-# Median of the PSQI column
-median(liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
-# Standard deviation of the PSQI column
-sd(liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score, na.rm = TRUE)
+#We select 31 as our value for m since as a rule of thumb the amount of imputed
+#datasets you want should equal the percentage of missing data for the variable
+#being imputed. The max iteration value is set to 10 since values from 10-20 are
+#usually recommended. The newly imputed values are then assigned to the liver_dfcleanPMM_IMP
+#data frame.
 
 ################################################################################
 ################################################################################
 
 ################################################################################
-##REMOVING NA VALUES FROM COMPLETE CASE DATAFRAME AND DATAFRAME EXCLUDING PSQI##
+###############REMOVING REMAINING NA VALUES DATA FRAMES#########################
 ################################################################################
 
 #Remove NA values from complete case dataframe
@@ -200,10 +188,10 @@ liver_dfcleanPMM_IMPrmNA <- na.omit(liver_dfcleanPMM_IMP)
 #'Here we convert categorical variables into factors by first assigning all variables
 #'needing conversion to "categorical_var", then we implement a for loop which will
 #' move through each variable in the categorical_var list and convert them to factors
-#' then reassign the converted variable back to the liver_defclean dataset. The
-#' temporary 'col' variable aprt of the for loop is assigneed to each variable in
+#' then reassign the converted variable back to each data frame. The
+#' temporary 'col' variable apart of the for loop is assigned to each variable in
 #' the given list one by one until all variables have been converted to factors.
-#' This is done for both dataframes liver_dfcleanCC and liver_dfcleanIMP
+#' This is done for all of the data frames.
 categorical_var <- c("Gender", "Liver.Diagnosis", "Recurrence.of.disease", "Rejection.graft.dysfunction",
                      "Any.fibrosis", "Renal.Failure", "Depression", "Corticoid", "Berlin.Sleepiness.Scale")
 for (col in categorical_var) {
@@ -230,11 +218,17 @@ for (col in categorical_var) {
 glimpse(liver_dfcleanPMM_IMP) #Looks good
 glimpse(liver_dfcleanCC) #Looks good
 glimpse(liver_noPSQI_rmNA) #Looks good
+glimpse(liver_noPSQI) #Looks good
+glimpse(liver_dfcleanPMM_IMPrmNA) #Looks good
+
 #'Using the summary function to check for presence of any values that were not
 #'encoded as NA's but look to be out of place
 summary(liver_dfcleanPMM_IMP) #Looks good
 summary(liver_dfcleanCC) #Looks good
 summary(liver_noPSQI_rmNA) #Looks good
+summary(liver_noPSQI) #Looks good
+summary(liver_dfcleanPMM_IMPrmNA) #Looks good
+
 ################################################################################
 ################################################################################
 
@@ -248,7 +242,7 @@ summary(liver_noPSQI_rmNA) #Looks good
 #'(1 = yes, 0 = no), Pittsburgh Sleep Quality Index score greater than 4, indicating
 #'poor sleep quality (1 = yes, 0 = no),Athens Insomnia Scale total score greater than
 #'5, indicating the presence of insomnia, (1 = yes, 0 = no). The new variables are
-#'added to the dataframe as new columns using the mutate function from the tidyverse
+#'added to the data frames as new columns using the mutate function from the tidyverse
 #'package.
 
 liver_dfcleanCC <- liver_dfcleanCC %>%
@@ -309,8 +303,8 @@ for (col in categorical_var3) {
 glimpse(liver_dfcleanCC)#variables successfully converted to factors
 glimpse(liver_dfcleanPMM_IMP)#variables successfully converted to factors
 glimpse(liver_noPSQI_rmNA) #variables successfully converted to factors
-################################################################################
-################################################################################
+glimpse(liver_noPSQI) #variables successfully converted to factors
+glimpse(liver_dfcleanPMM_IMPrmNA) #variables successfully converted to factors
 
 ################################################################################
 ################################################################################
@@ -319,10 +313,10 @@ glimpse(liver_noPSQI_rmNA) #variables successfully converted to factors
 ##################### FINAL LIST OF RELEVANT DATAFRAMES#########################
 ################################################################################
 
-#---liver_dfcleanCC--- omplete case dataframe which includes PSQI variable
+#---liver_dfcleanCC--- Complete case data frame which includes PSQI variable
 
 #---liver_dfcleanPMM_IMP---Dataframe with imputed values for PSQI but still has NA values present for other variables
 #---liver_dfcleanPMM_IMPrmNA--- Dataframe with imputed values for PSQI and remaining NA's removed
 
 #---liver_noPSQI--- Dataframe excluding PSQI but still has NA values present for other variables
-#---liver_noPSQI_rmNA--- Dataframe with PSQI compleetely removed as a variable and remaining NA's removed
+#---liver_noPSQI_rmNA--- Dataframe with PSQI completely removed as a variable and remaining NA's removed
