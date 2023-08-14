@@ -441,7 +441,7 @@ approach2 <- ggplot(data = prevalence2, aes(x = Scale, y = Prevalence.Percent, f
   scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
   labs(title = "Prevalence of Sleep Disturbance Across Scales Using Available Case",
        x = "Sleep Disturbance Scale",
-       caption = "*Confidence intervals indicate range where prevalence estimates fall.") +
+       caption = "*Estimation procedure capture true prevalence in this range 95% of the time.") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.caption = element_text(size = 9, color = "gray", hjust = 0)) +
   guides(fill = "none") # Remove the fill legend because its unnecessary
