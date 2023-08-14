@@ -346,7 +346,7 @@ attach(liver_noPSQI_rmNA)
 prevalence1 <- prop.table(table(Berlin.Sleepiness.Scale, Epworth_binary, Athens_binary))
 
 # Extract the table
-write.csv(prevalence, "prevalence.csv")
+write.csv(prevalence1, "prevalence1.csv")
 
 # We want to plot the results we got for when we have sleep disturbance based on one scale and complete case dataset
 prevalence1 <- data.frame(
@@ -354,6 +354,8 @@ prevalence1 <- data.frame(
   Prevalence.Percent = c(23.79, 9, 6.15)
 )
 
+# Install and load ggplot2 for generating graphs
+#install.packages("ggplot2")
 library(ggplot2)
 # Create the bar plot with color instead of fill
 approach1 <- ggplot(data = prevalence1, aes(x = Scale, y = Prevalence.Percent, fill= Scale)) +
@@ -439,7 +441,7 @@ approach2 <- ggplot(data = prevalence2, aes(x = Scale, y = Prevalence.Percent, f
   scale_y_continuous(limits = c(0, 100), name = "Prevalence (%)") +
   labs(title = "Prevalence of Sleep Disturbance Across Scales Using Available Case",
        x = "Sleep Disturbance Scale",
-       caption = "*Confidence intervals indicate uncertainty of the prevalence estimates.") +
+       caption = "*Confidence intervals indicate range where prevalence estimates fall.") +
   theme(axis.text.x = element_text(angle = 45, hjust = 1),
         plot.caption = element_text(size = 9, color = "gray", hjust = 0)) +
   guides(fill = "none") # Remove the fill legend because its unnecessary
@@ -453,6 +455,9 @@ ggsave("prev_plots.png", prev_plots, width = 14, height = 6, dpi = 300)
 ############Experimenting: Supplementary################
 #' We're interested to investigate the likelihood that an individual with sleep disturbance
 #' ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
+#' the exact threshold for defining "low" quality of life using the SF-36 PCS and MCS scores is subjective. Therefore, a pragmatic
+#' approach was adopted: scores one standard deviation or more below the averages were taken to indicate low quality of life.
+#' For PCS, scores of ~33 or below indicate low quality of life, and for MCS, a score of ~36 or below.
 #' Event A: Low quality of life defined by a chosen threshold
 #' Event B: Sleep disturbance based on specific scale
 #' P(A|B) = = Number of individuals with both A and B / Number of individuals with B
@@ -512,7 +517,6 @@ chi_square_res <- data.frame(
   p_value = c(0.0008558, 0.2095, 0.0007884, 0.001143, 0.01198, 8.044e-07)
 )
 
-library(ggplot2)
 # Create a bar plot for the x^2 values
 x_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared, fill = Low_Quality_Measure)) +
   geom_bar(stat = "identity", position = "dodge") + # dodge is selected to have the MCS and PCS for each scale beside each other
@@ -522,11 +526,12 @@ x_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared, fill = Low_Qualit
        fill = "Low Quality of Life Measure") +
   theme_light()+
   guides(fill = "none") # Remove the fill legend because I will add it in the p-value plot
-x_plot
+
+x_plot # not informative!
 
 # Create a dot plot for p-values
 p_value_plot <- ggplot(chi_square_res, aes(x = Scale, y = p_value, color = Low_Quality_Measure)) +
-  geom_point(size = 3) +
+  geom_point(size = 2, position = position_dodge(width = 0.5)) + # adjusted the position of data points because ESS points overlap
   labs(title = "P-values from Chi-squared Test Results",
        x = "Sleep Disturbance Scale",
        y = "P-value",
@@ -536,12 +541,8 @@ p_value_plot <- ggplot(chi_square_res, aes(x = Scale, y = p_value, color = Low_Q
 
 p_value_plot
 
-# Display the plots side by side
-chi_p_value <- grid.arrange(x_plot, p_value_plot, ncol = 2)
+ggsave("p_value_plot.png", p_value_plot, width = 8, height = 6, dpi = 300)
 
-ggsave("chi_sqaure_combined.png", chi_p_value, width = 14, height = 6, dpi = 300)
-
-library(ggplot2)
 # Experimenting and creating a forest plot-like visualization
 forest_plot <- ggplot(chi_square_res, aes(x = Scale, y = X_squared)) +
   geom_point(aes(color = Low_Quality_Measure), size = 3) +
