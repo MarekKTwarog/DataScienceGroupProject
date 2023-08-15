@@ -163,18 +163,23 @@ liver_dfcleanPMM_IMP <- liver_dfclean
 ###########MULTIPLE IMPUTATION VIA PREDICTIVE MEAN MATCHING METHOD #############
 ################################################################################
 
-# Selecting relevant columns for imputation
+# Select columns for imputation
 imputation_col <- liver_dfclean[c("Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")]
-# Performing PMM imputation with 
+# Performing PMM imputation
 PSQIimputations <- mice(imputation_col, method = "pmm", m = 31, maxit = 10, print = FALSE)
-PSQI_imputed_values <- complete(PSQIimputations) #complete function extracts the imputed values based on the 31 imputed datasets
-liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score <- PSQI_imputed_values$Pittsburgh.Sleep.Quality.Index.Score 
+# Using the complete function on the mids object to get imputed values
+PSQI_imputed_values <- complete(PSQIimputations)
+# Calculating the means of the imputed values
+mean_imputed <- rowMeans(PSQI_imputed_values)
+# Assigning the pooled imputed values to liver_dfcleanPMM_IMP dataframe
+liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score <- mean_imputed
 
 #We select 31 as our value for m since as a rule of thumb the amount of imputed
 #datasets you want should equal the percentage of missing data for the variable
 #being imputed. The max iteration value is set to 10 since values from 10-20 are
-#usually recommended. The newly imputed values are then assigned to the liver_dfcleanPMM_IMP
-#data frame.
+#usually recommended. The newly imputed values in each of the 31 datasets created
+#then have their means calculated and the mean of each imputed mssing value is assigned
+#to the dataset liver_dfcleanPMM_IMP 
 
 ################################################################################
 ################################################################################
