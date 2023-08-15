@@ -17,6 +17,13 @@ install.packages("mice")
 library(mice)
 install.packages("corrplot")
 library(corrplot)
+library(dplyr)
+install.packages("carData")
+library(carData)
+install.packages("MASS")
+library(MASS)
+install.packages("gridExtra")
+library(gridExtra)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
@@ -328,15 +335,6 @@ glimpse(liver_dfcleanPMM_IMPrmNA) #variables successfully converted to factors
 #### Goal 3A: find the predictors associated with sleep disturbance for the liver_dfcleanCC data frame
 #Loading dataset
 liver_df <- read.csv("project_data.csv")
-
-#Loading packages for removal of weak predictors
-
-library(dplyr)
-install.packages("carData")
-library(carData)
-install.packages("MASS")
-library(MASS)
-
 
 # Fit the full logistic regression model with all predictors
 # logistic regression model was used instead of the linear model because we have binary variables.
