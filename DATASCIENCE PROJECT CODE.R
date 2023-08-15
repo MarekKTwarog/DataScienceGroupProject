@@ -422,7 +422,7 @@ AIS_full_IMPrmNA <- glm(Athens_binary~
                          Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
                          Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
-glimpse(AIS_full_IMPrmNAI)
+glimpse(AIS_full_IMPrmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
 AIS.step.back.IMPrmNA <- stepAIC(AIS_full_IMPrmNA)
 summary(AIS.step.back.IMPrmNA)
