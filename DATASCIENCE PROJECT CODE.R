@@ -349,7 +349,7 @@ PSQI_full_CC <- glm(Pittsburgh_binary~
 # using the glimpse function to view a concise overview of the data frame
 glimpse(PSQI_full_CC)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
-PSQI.step.back <- stepAIC(PSQI_full_CC)
+PSQI.step.back.CC <- stepAIC(PSQI_full_CC)
 summary(PSQI.step.back.CC)
 
 # finding the predictors associated with sleep for the ESS measure
