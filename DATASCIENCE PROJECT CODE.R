@@ -17,8 +17,6 @@ install.packages("mice")
 library(mice)
 install.packages("corrplot")
 library(corrplot)
-install.packages("MASS")
-library(MASS)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
