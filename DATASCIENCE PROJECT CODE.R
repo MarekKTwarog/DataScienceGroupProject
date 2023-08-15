@@ -8,7 +8,8 @@
 ################## Goal 1: Description of relevant data ########################
 ################################################################################
 
-#Loading packages for data cleaning / analysis
+#Loading packages for data cleaning / analysis of data
+
 install.packages("tidyverse")
 library(tidyverse)
 install.packages("funModeling")
@@ -17,6 +18,7 @@ install.packages("mice")
 library(mice)
 install.packages("corrplot")
 library(corrplot)
+install.packages("dplyr")
 library(dplyr)
 install.packages("carData")
 library(carData)
@@ -24,13 +26,15 @@ install.packages("MASS")
 library(MASS)
 install.packages("gridExtra")
 library(gridExtra)
+install.packages("car")
+library(car)
 
 ################################################################################
 ############################ LOADING DATASET ###################################
 ################################################################################
 
 liver_df <- read.csv("project_data.csv")
-glimpse(liver_df)
+glimpse(liver_df) #quick look at the data
 
 ################################################################################
 ################################################################################
@@ -330,14 +334,16 @@ glimpse(liver_dfcleanPMM_IMPrmNA) #variables successfully converted to factors
 ##################### PREDICTORS ASSOCIATED WITH SLEEP DISTURBANCE##############
 ################################################################################
 
+################################################################################
 #### Goal 3A: find the predictors associated with sleep disturbance for the liver_dfcleanCC data frame
+################################################################################
 
 # Fit the full logistic regression model with all predictors
 # logistic regression model was used instead of the linear model because we have binary variables.
 PSQI_full_CC <- glm(Pittsburgh_binary~
-                   Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                   Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                   Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
+                      Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                      Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                      Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(PSQI_full_CC)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -346,9 +352,9 @@ summary(PSQI.step.back.CC)
 
 # finding the predictors associated with sleep for the ESS measure
 ESS_full_CC <- glm(Epworth_binary~
-                  Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                  Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
+                     Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                     Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                     Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(ESS_full_CC)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -358,9 +364,9 @@ summary(ESS.step.back.CC)
 
 # finding the predictors associated with sleep for the AIS measure
 AIS_full_CC <- glm(Athens_binary~
-                  Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                  Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
+                     Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                     Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                     Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(AIS_full_CC)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -370,9 +376,9 @@ summary(AIS.step.back.CC)
 
 # finding the predictors associated with sleep for the BSS measure
 BSS_full_CC <- glm(Berlin.Sleepiness.Scale~
-                  Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                  Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                  Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
+                     Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                     Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                     Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanCC), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(BSS_full_CC)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -380,14 +386,15 @@ BSS.step.back.CC <- stepAIC(BSS_full_CC)
 summary(BSS.step.back.CC)
 
 
-
+################################################################################
 #### Goal 3B: find the predictors associated with sleep disturbance for the liver_dfcleanPMM_IMPrmNA data frame
+################################################################################
 
 # Fit the full logistic regression model with all predictors
 PSQI_full_IMPrmNA <- glm(Pittsburgh_binary~
-                          Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                          Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                          Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
+                           Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                           Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                           Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
 
 # using the glimpse function to view a concise overview of the data frame
 glimpse(PSQI_full_IMPrmNA)
@@ -397,9 +404,9 @@ summary(PSQI.step.back.IMPrmNA)
 
 # finding the predictors associated with sleep for the ESS measure
 ESS_full_IMPrmNA <- glm(Epworth_binary~
-                         Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                         Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                         Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
+                          Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                          Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                          Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(ESS_full_IMPrmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -409,9 +416,9 @@ summary(ESS.step.back.IMPrmNA)
 
 # finding the predictors associated with sleep for the AIS measure
 AIS_full_IMPrmNA <- glm(Athens_binary~
-                         Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                         Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                         Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
+                          Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                          Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                          Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(AIS_full_IMPrmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -421,9 +428,9 @@ summary(AIS.step.back.IMPrmNA)
 
 # finding the predictors associated with sleep for the BSS measure
 BSS_full_IMPrmNA <- glm(Berlin.Sleepiness.Scale~
-                         Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                         Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                         Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
+                          Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                          Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                          Renal.Failure + Depression + Corticoid, data = na.omit(liver_dfcleanPMM_IMPrmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(BSS_full_IMPrmNA)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -431,8 +438,9 @@ BSS.step.back.IMPrmNA <- stepAIC(BSS_full_IMPrmNA)
 summary(BSS.step.back.IMPrmNA)
 
 
-
+################################################################################
 #### Goal 3C: find the predictors associated with sleep disturbance for the liver_noPSQI_rmNA data frame
+################################################################################
 
 #Loading dataset
 liver_df <- read.csv("project_data.csv")
@@ -440,9 +448,9 @@ liver_df <- read.csv("project_data.csv")
 # finding the predictors associated with sleep for the ESS measure
 # Fit the full logistic regression model with all predictors
 ESS_full_noPSQI <- glm(Epworth_binary~
-                     Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                     Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                     Renal.Failure + Depression + Corticoid, data = na.omit(liver_noPSQI_rmNA), family = "binomial")
+                         Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                         Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                         Renal.Failure + Depression + Corticoid, data = na.omit(liver_noPSQI_rmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(ESS_full_noPSQI)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -452,9 +460,9 @@ summary(ESS.step.back.noPSQI)
 
 # finding the predictors associated with sleep for the AIS measure
 AIS_full_noPSQI <- glm(Athens_binary~
-                     Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                     Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                     Renal.Failure + Depression + Corticoid, data = na.omit(liver_noPSQI_rmNA), family = "binomial")
+                         Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                         Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                         Renal.Failure + Depression + Corticoid, data = na.omit(liver_noPSQI_rmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(AIS_full_noPSQI)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -464,9 +472,9 @@ summary(AIS.step.back.noPSQI)
 
 # finding the predictors associated with sleep for the BSS measure
 BSS_full_noPSQI <- glm(Berlin.Sleepiness.Scale~
-                     Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
-                     Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
-                     Renal.Failure + Depression + Corticoid, data = na.omit(liver_noPSQI_rmNA), family = "binomial")
+                         Gender + Age + BMI + Time.from.transplant + Liver.Diagnosis +
+                         Recurrence.of.disease + Rejection.graft.dysfunction + Any.fibrosis +
+                         Renal.Failure + Depression + Corticoid, data = na.omit(liver_noPSQI_rmNA), family = "binomial")
 # using the glimpse function to view a concise overview of the data frame
 glimpse(BSS_full_noPSQI)
 # using the stepAIC function to perform the backwards stepwise selection process which eliminates predictors on the basis of AIC
@@ -476,7 +484,11 @@ summary(BSS.step.back.noPSQI)
 ################################################################################
 ############### Goal 2: Estimation of the prevalence of sleep disturbance ######
 ################################################################################
-#### Approach 1
+
+################################################################################
+#### Approach 1#################################################################
+################################################################################
+
 # Attach dataframe with complete cases to avoid referencing it every time you use it
 attach(liver_noPSQI_rmNA)
 
@@ -507,8 +519,9 @@ approach1 <- ggplot(data = prevalence1, aes(x = Scale, y = Prevalence.Percent, f
   theme(axis.text.x = element_text(angle = 45, hjust = 1)) +                        # axis.text.x = will rotate the x-axis labels and hjust will alter it position
   guides(fill = "none")                                                     # this removes the fill legend because its unnecessary
 
-
-#### Approach 2
+################################################################################
+#### Approach 2#################################################################
+################################################################################
 
 #' The results of prevalence when doing it all together is not the most ideal way to do it because each scale has each scale has a different number of observations with missing values
 #' Thus, we will try to calculate the prevalence by taking into consideration the observations without missing values for each scale seperately
@@ -543,15 +556,15 @@ prevalence2 <- data.frame()
 # Loop through sleep disturbance variables
 for (scale_name in names(sleep_vars)) {
   scale_values <- sleep_vars[[scale_name]]
-
+  
   # Calculate prevalence using prop.test
   cases <- sum(scale_values == 1, na.rm = TRUE)
   population <- sum(!is.na(scale_values))
   missing_values <- sum(is.na(scale_values))
-
+  
   # Calculate prevalence and confidence intervals using prop.test
   prev_result <- prop.test(x = cases, n = population, conf.level = 0.95)
-
+  
   # Create a row for the dataframe
   result <- data.frame(
     Scale = scale_name,
@@ -562,7 +575,7 @@ for (scale_name in names(sleep_vars)) {
     CI.Lower = prev_result$conf.int[1] * 100,
     CI.Upper = prev_result$conf.int[2] * 100
   )
-
+  
   # Append the scale result to the dataframe and use rbind to join multiple rows created above.
   prevalence2 <- rbind(prevalence2, result)
 }
@@ -589,8 +602,10 @@ detach(liver_noPSQI)
 prev_plots <- grid.arrange(approach1, approach2, ncol = 2)
 ggsave("prev_plots.png", prev_plots, width = 14, height = 6, dpi = 300)
 
+################################################################################
+###########################Experimenting: Supplementary#########################
+################################################################################
 
-############Experimenting: Supplementary################
 #' We're interested to investigate the likelihood that an individual with sleep disturbance
 #' ...(according to the sleep disturbance scale scores) will also have low quality of life (based on the SF-36 PCS = & MCS scores).
 #' the exact threshold for defining "low" quality of life using the SF-36 PCS and MCS scores is subjective. Therefore, a pragmatic
@@ -603,7 +618,7 @@ ggsave("prev_plots.png", prev_plots, width = 14, height = 6, dpi = 300)
 generate_contingency_table <- function(scale_column, sleep_column, sf36_threshold) {
   sleep_disturbance <- liver_noPSQI_rmNA[[scale_column]] == 1
   low_quality_sf36 <- liver_noPSQI_rmNA[[sf36_column]] <= sf36_threshold
-
+  
   contingency_table <- table(sleep_disturbance, low_quality_sf36)
   return(contingency_table)
 }
@@ -628,15 +643,15 @@ for (scale_column in sleep_scale_columns) {
     } else {
       sf36_threshold <- sf36_mcs_threshold
     }
-
+    
     contingency_table <- generate_contingency_table(scale_column, sf36_column, sf36_threshold)
-
+    
     # Create the file name for the contingency table
     file_name <- paste(scale_column,  sf36_column,"contingency_table.csv", sep = "_")
-
+    
     # Save the contingency table as a CSV file
     write.csv(contingency_table, file_name)
-
+    
     # Perform chi-square test
     chi_square_result <- chisq.test(contingency_table)
     chi_square_results[[scale_column]][[sf36_column]] <- chi_square_result
@@ -695,3 +710,256 @@ ggsave("forestplot_experimenting.png", forest_plot, width = 8, height = 6, dpi =
 
 ################################################################################
 ################################################################################
+
+#--------------------------------------------------------------------------------------------------------------
+########################################################################################################################################
+####################Identifying the relationship between sleep disturbance and quality of life (physical and mental)####################
+########################################################################################################################################
+# We need to create linear regression models and conduct correlation tests for single predictors
+# to investigate whether there is a linear relationship between each measure and outcome (PCS and MCS)
+# We begin with the continuous measures
+# List of continuous predictors
+continuous_predictors <- c("Epworth.Sleepiness.Scale", "Athens.Insomnia.Scale")
+# List of binary predictors
+binary_predictors <- c("Epworth_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
+# List of response variables
+responses <- c("SF36.PCS", "SF36.MCS")
+#For liver_noPSQI_rmNA
+for (predictor in c(continuous_predictors, binary_predictors)) {
+  for (response in responses) {
+    model_formula <- as.formula(paste(response, "~", predictor))
+    model <- lm(model_formula, data = liver_noPSQI_rmNA)
+    print(paste("Model: ", response, " ~ ", predictor))
+    print(summary(model))
+    plot(fitted(model), resid(model), 
+         main = paste("Residual Plot for Model:", response, "~", predictor),
+         sub = "Dataset: PSQI Removed")    
+    # Only run cor.test if both predictor and response are numeric
+    if (is.numeric(liver_noPSQI_rmNA[[response]]) & is.numeric(liver_noPSQI_rmNA[[predictor]])) {
+      print(cor.test(liver_noPSQI_rmNA[[response]], liver_noPSQI_rmNA[[predictor]]))
+    }
+  }
+}
+#For liver_dfcleanPMM_IMPrmNA
+#Need to now establish PSQI as a variable
+continuous_predictors <- c("Epworth.Sleepiness.Scale", "Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")
+binary_predictors <- c("Epworth_binary", "Pittsburgh_binary", "Athens_binary", "Berlin.Sleepiness.Scale")
+
+for (predictor in c(continuous_predictors, binary_predictors)) {
+  for (response in responses) {
+    model_formula <- as.formula(paste(response, "~", predictor))
+    model <- lm(model_formula, data = liver_dfcleanPMM_IMPrmNA)
+    print(paste("Model: ", response, " ~ ", predictor))
+    print(summary(model))
+    plot(fitted(model), resid(model), 
+         main = paste("Residual Plot for Model:", response, "~", predictor),
+         sub = "Dataset: Pairwise Imputation")
+    
+    # Only run cor.test if both predictor and response are numeric
+    if (is.numeric(liver_dfcleanPMM_IMPrmNA[[response]]) & is.numeric(liver_dfcleanPMM_IMPrmNA[[predictor]])) {
+      print(cor.test(liver_dfcleanPMM_IMPrmNA[[response]], liver_dfcleanPMM_IMPrmNA[[predictor]]))
+    }
+  }
+}
+#For liver_dfcleanCC
+for (predictor in c(continuous_predictors, binary_predictors)) {
+  for (response in responses) {
+    model_formula <- as.formula(paste(response, "~", predictor))
+    model <- lm(model_formula, data = liver_dfcleanCC)
+    print(paste("Model: ", response, " ~ ", predictor))
+    print(summary(model))
+    plot(fitted(model), resid(model), 
+         main = paste("Residual Plot for Model:", response, "~", predictor),
+         sub = "Dataset: Complete Case")    
+    # Only run cor.test if both predictor and response are numeric
+    if (is.numeric(liver_dfcleanCC[[response]]) & is.numeric(liver_dfcleanCC[[predictor]])) {
+      print(cor.test(liver_dfcleanCC[[response]], liver_dfcleanCC[[predictor]]))
+    }
+  }
+}
+
+################################################################################
+################## INVESTIGATING NON-PSQI MODEL OUTPUTS ##########################
+################################################################################
+
+# Load the MASS library for the stepAIC function
+library(MASS)
+# Mixed model
+library(car) #loading vif function
+
+# Define the PCS null model
+noPSQI.PCS.mix.mod.null <- lm(SF36.PCS ~ 1, data = liver_noPSQI_rmNA)
+
+# Define the full model
+noPSQI.PCS.mix.mod.full <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_noPSQI_rmNA)
+
+# Perform forward stepwise selection
+noPSQI.PCS.mix.step.forw <- stepAIC(noPSQI.PCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = noPSQI.PCS.mix.mod.full, lower = noPSQI.PCS.mix.mod.null))
+
+# View the final model
+summary(noPSQI.PCS.mix.step.forw)
+
+# Check for collinearity
+vif(noPSQI.PCS.mix.step.forw)
+
+# Comparing to full variable inclusion
+anova(noPSQI.PCS.mix.step.forw, noPSQI.PCS.mix.mod.full)
+
+# Checking AICs to further investigate
+AIC(noPSQI.PCS.mix.mod.full)
+AIC(noPSQI.PCS.mix.step.forw)
+
+# Define the MCS null model
+noPSQI.MCS.mix.mod.null <- lm(SF36.MCS ~ 1, data = liver_noPSQI_rmNA)
+
+# Define the full model
+noPSQI.MCS.mix.mod.full <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale  + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_noPSQI_rmNA)
+
+# Perform forward stepwise selection
+noPSQI.MCS.mix.step.forw <- stepAIC(noPSQI.MCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = noPSQI.MCS.mix.mod.full, lower = noPSQI.MCS.mix.mod.null))
+
+# View the final model
+summary(noPSQI.MCS.mix.step.forw)
+
+# Check for collinearity
+vif(noPSQI.MCS.mix.step.forw)
+
+# Comparing to full variable inclusion
+anova(noPSQI.MCS.mix.step.forw, noPSQI.MCS.mix.mod.full)
+
+# We see there is not a statistically significant value for inclusion of PSQI
+
+# Checking AICs to further investigate
+AIC(noPSQI.MCS.mix.mod.full)
+AIC(noPSQI.MCS.mix.step.forw)
+
+# Plotting residuals for the PCS stepwise model
+plot(fitted(noPSQI.PCS.mix.step.forw), residuals(noPSQI.PCS.mix.step.forw),
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values for Model SF36.PCS ~ AIS + ESS + BSS")
+abline(h = 0, col = "red")  # Adds a horizontal line at y = 0
+
+# Plotting residuals for the MCS stepwise model
+plot(fitted(noPSQI.MCS.mix.step.forw), residuals(noPSQI.MCS.mix.step.forw),
+     xlab = "Fitted Values", ylab = "Residuals",
+     main = "Residuals vs Fitted Values for Model SF36.MCS ~ AIS + ESS")
+abline(h = 0, col = "red")  # Adds a horizontal line at y = 0
+
+# Q-Q plot for the PCS stepwise model residuals
+qqnorm(residuals(noPSQI.PCS.mix.step.forw))
+qqline(residuals(noPSQI.PCS.mix.step.forw))
+
+# Q-Q plot for the MCS stepwise model residuals
+qqnorm(residuals(noPSQI.MCS.mix.step.forw))
+qqline(residuals(noPSQI.MCS.mix.step.forw))
+
+
+################################################################################
+################## COMPARING IMP vs. CC MODEL OUTPUTS ##########################
+################################################################################
+
+
+################################################################################
+###### IMP ANALYSIS #############
+################################################################################
+
+# Define the PCS null model
+IMP.PCS.mix.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfcleanPMM_IMPrmNA)
+
+# Define the full model
+IMP.PCS.mix.mod.full <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_dfcleanPMM_IMPrmNA)
+
+# Perform forward stepwise selection
+IMP.PCS.mix.step.forw <- stepAIC(IMP.PCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = IMP.PCS.mix.mod.full, lower = IMP.PCS.mix.mod.null))
+
+# View the final model
+summary(IMP.PCS.mix.step.forw)
+
+# Check for collinearity
+vif(IMP.PCS.mix.step.forw)
+
+# Comparing to full variable inclusion
+anova(IMP.PCS.mix.step.forw, IMP.PCS.mix.mod.full)
+
+# We see there is not a statistically significant value for inclusion of PSQI
+
+# Checking AICs to further investigate
+AIC(IMP.PCS.mix.mod.full)
+AIC(IMP.PCS.mix.step.forw)
+
+# Define the MCS null model
+IMP.MCS.mix.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfcleanPMM_IMPrmNA)
+
+# Define the full model
+IMP.MCS.mix.mod.full <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_dfcleanPMM_IMPrmNA)
+
+# Perform forward stepwise selection
+IMP.MCS.mix.step.forw <- stepAIC(IMP.MCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = IMP.MCS.mix.mod.full, lower = IMP.MCS.mix.mod.null))
+
+# View the final model
+summary(IMP.MCS.mix.step.forw)
+
+# Check for collinearity
+vif(IMP.MCS.mix.step.forw)
+
+# Comparing to full variable inclusion
+anova(IMP.MCS.mix.step.forw, IMP.MCS.mix.mod.full)
+
+# We see there is not a statistically significant value for inclusion of PSQI
+
+# Checking AICs to further investigate
+AIC(IMP.MCS.mix.mod.full)
+AIC(IMP.MCS.mix.step.forw)
+
+################################################################################
+###### CC ANALYSIS #############
+################################################################################
+
+
+# Define the PCS null model
+CC.PCS.mix.mod.null <- lm(SF36.PCS ~ 1, data = liver_dfcleanCC)
+
+# Define the full model
+CC.PCS.mix.mod.full <- lm(SF36.PCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_dfcleanCC)
+
+# Perform forward stepwise selection
+CC.PCS.mix.step.forw <- stepAIC(CC.PCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = CC.PCS.mix.mod.full, lower = CC.PCS.mix.mod.null))
+
+# View the final model
+summary(CC.PCS.mix.step.forw)
+
+# Check for collinearity
+vif(CC.PCS.mix.step.forw)
+vif(CC.PCS.mix.mod.full)
+# Comparing to full variable inclusion
+anova(CC.PCS.mix.step.forw, CC.PCS.mix.mod.full)
+
+# We see there is not a statistically significant value for inclusion of PSQI and BSS
+
+# Checking AICs to further investigate
+AIC(CC.PCS.mix.mod.full)
+AIC(CC.PCS.mix.step.forw)
+
+# Define the MCS null model
+CC.MCS.mix.mod.null <- lm(SF36.MCS ~ 1, data = liver_dfcleanCC)
+
+# Define the full model
+CC.MCS.mix.mod.full <- lm(SF36.MCS ~ Epworth.Sleepiness.Scale + Pittsburgh.Sleep.Quality.Index.Score + Athens.Insomnia.Scale + Berlin.Sleepiness.Scale, data = liver_dfcleanCC)
+
+# Perform forward stepwise selection
+CC.MCS.mix.step.forw <- stepAIC(CC.MCS.mix.mod.null, direction = "forward", trace = F, scope = list(upper = CC.MCS.mix.mod.full, lower = CC.MCS.mix.mod.null))
+
+# View the final model
+summary(CC.MCS.mix.step.forw)
+
+# Check for collinearity
+vif(CC.MCS.mix.step.forw)
+
+# Comparing to full variable inclusion
+anova(CC.MCS.mix.step.forw, CC.MCS.mix.mod.full)
+
+# We see there is not a statistically significant value for inclusion of BSS and ESS
+
+# Checking AICs to further investigate
+AIC(CC.MCS.mix.mod.full)
+AIC(CC.MCS.mix.step.forw)
