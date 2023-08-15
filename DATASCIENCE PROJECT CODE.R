@@ -167,8 +167,8 @@ liver_dfcleanPMM_IMP <- liver_dfclean
 imputation_col <- liver_dfclean[c("Pittsburgh.Sleep.Quality.Index.Score", "Athens.Insomnia.Scale")]
 # Performing PMM imputation with 
 PSQIimputations <- mice(imputation_col, method = "pmm", m = 31, maxit = 10, print = FALSE)
-PSQI_imputed_values <- complete(PSQIimputations)
-liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score <- PSQI_imputed_values$Pittsburgh.Sleep.Quality.Index.Score
+PSQI_imputed_values <- complete(PSQIimputations) #complete function extracts the imputed values based on the 31 imputed datasets
+liver_dfcleanPMM_IMP$Pittsburgh.Sleep.Quality.Index.Score <- PSQI_imputed_values$Pittsburgh.Sleep.Quality.Index.Score 
 
 #We select 31 as our value for m since as a rule of thumb the amount of imputed
 #datasets you want should equal the percentage of missing data for the variable
